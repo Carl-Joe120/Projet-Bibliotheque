@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% include "include/layout_head.html" %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+<body class="sb-nav-fixed">
+  {% include "include/layout_header.html" %}
+  <div id="layoutSidenav">
+    {% include "include/layout_sidebar.html" %}
+
+     <div id="layoutSidenav_content">
+               
+				<main>
+    {% block content %}
+    
+    
+    {% endblock content %}
+
+   
+                </main>
+
+
+{% include "include/layout_footer.html" %}
+
+{% block extra_js %}
+
+{% endblock extra_js %}
+
+</body>
+</html>

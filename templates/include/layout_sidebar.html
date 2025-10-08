@@ -1,0 +1,109 @@
+<div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <div class="sb-sidenav-menu-heading">Core</div>
+                            <a class="nav-link" href="index.html">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                Dashboard Membre
+                            </a>
+                            <div class="sb-sidenav-menu-heading">Interface</div>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-compass"></i></div>
+                                Navigation Simplifiée
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="layout-static.html"><div class="sb-nav-link-icon"><i class="fas fa-book-reader"></i></div>Livre Empruntés</a>
+                                    <a class="nav-link" href="layout-static.html"><div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>Réservation</a>
+									<a class="nav-link" href="layout-static.html"><div class="sb-nav-link-icon"><i class="fas fa-star"></i></div>Recommandation</a>
+									<a class="nav-link" href="layout-static.html"><div class="sb-nav-link-icon"><i class="fas fa-id-card"></i></div>Profil Utilisateur</a>
+                                </nav>
+                            </div>
+
+                            
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                                <div class="sb-nav-link-icon"><i class="fas fa-files"></i></div>
+                                Pages
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                                    
+                                    <!--Authentication-->
+                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                                        Authentication
+                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                    </a>
+                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingAuth" data-bs-parent="#sidenavAccordionPages">
+                                        <nav class="sb-sidenav-menu-nested nav">
+                                        <a class="nav-link" href="login.html">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i> Connexion
+                                        </a>
+
+                                            <a class="nav-link" href="login.html">
+                                            <i class="bi bi-person-plus me-2"></i> Inscription
+                                        </a>
+
+
+                                            <a class="nav-link" href="login.html">
+                                            <i class="bi bi-key me-2"></i> Mot de passe oublié
+                                        </a>
+                                        </nav>
+                                    </div>
+                                    <!--Erreurs-->
+                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                        Erreurs
+                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                    </a>
+                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingError" data-bs-parent="#sidenavAccordionPages">
+                                        <nav class="sb-sidenav-menu-nested nav">
+                                            <a class="nav-link" href="401.html">
+                                                <i class="fas fa-shield-lock me-2"></i>Page 401 - Non autorisé
+                                            </a>
+
+                                             <a class="nav-link" href="401.html">
+                                                <i class="fas fa-search me-2"></i>Page 404 - Introuvable
+                                            </a>
+                                             <a class="nav-link" href="401.html">
+                                                <i class="fas fa-bug me-2"></i>Page 500 - Erreur serveur
+                                            </a>
+                                        </nav>
+                                    </div>
+                                </nav>
+                            </div>
+
+                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFonctionnalites" aria-expanded="false" aria-controls="collapseFonctionnalites">
+                            <div class="sb-nav-link-icon"><i class="bi bi-puzzle"></i></div>
+                            Fonctionnailités
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseFonctionnalites" aria-labelledby="headingFonctionnalites" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    
+                            <a class="nav-link" href="">
+                                <i  class="bi bi-bar-chart-line me-2"></i> Statistiques de lecture
+                            </a>
+
+                                     <!--Historique des emprunts-->
+                            <a class="nav-link" href="">
+                                <i  class="bi bi-journal-text me-2"></i> Historique des emprunts
+                            </a>
+
+                                 <!--Objectifs de lecture-->
+                            <a class="nav-link" href="">
+                                <i  class="bi bi-bullseye me-2"></i> Objectifs de lecture
+                            </a>
+                        </nav>
+                    </div>
+
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer">
+                        <div class="small">Logged in as:</div>
+                        Start Bootstrap
+                    </div>
+                </nav>
+            </div>

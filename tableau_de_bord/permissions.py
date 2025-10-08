@@ -1,0 +1,6 @@
+'''
+
+aksè admin/sekrètè sèlman
+
+
+'''
