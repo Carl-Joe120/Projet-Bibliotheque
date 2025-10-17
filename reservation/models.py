@@ -31,6 +31,9 @@ class Reservation(models.Model):
     qr_code = models.ImageField(upload_to='qr_codes/', blank=True , null=True)
     statut = models.CharField(max_length= 20 , choices= ReservationStatus.choices , default= ReservationStatus.En_ATTENTE )
     type_reservation = models.CharField(max_length= 30 , choices=[('physique' , 'Physique') , ('en_ligne' , 'En_ligne')] , default='Physique')
+    livre_demande = models.CharField(max_length= 255 , blank=True , null= True)
+    message_utilisateur = models.TextField(blank=True , null= True)
+    date_confirmation = models.DateField(blank=True , null= True)
     
 
     def __str__(self):

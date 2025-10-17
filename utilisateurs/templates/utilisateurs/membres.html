@@ -5,14 +5,6 @@
 {% block content %}
 
 
-                    <form method="post" action="{% url 'importer-liv-francais' %}">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-success">
-    <i class="fas fa-download me-2"></i> Importer 200 livres depuis Open Library
-  </button>
-</form>
-
-
                     <div class="container-fluid px-4">
                         <h1 class="mt-4">Dashboard</h1>
                         <ol class="breadcrumb mb-4">
@@ -22,7 +14,7 @@
                             <div class="col-xl-3 col-md-6">
                                 <div class="card bg-primary text-white mb-4 shadow-sm hover-zoom">
                                     <div class="card-body d-flex flex-column align-items-start">
-                                        <i class="fas fa-book-reader fa-lg mb-2 pulse-icon"></i>
+                                        <i class="fas fa-book-reader fa-lg mb-2 pulse-icon"></i> 
                                         <h5>Livres empruntés</h5>
                                         <h3 class="stat-count" data-count="{{ usser.user_loans }}">0</h3>
                                     </div>

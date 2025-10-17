@@ -1,6 +1,9 @@
 from django.contrib import messages
 from django.shortcuts import redirect
 from .utils import importer_livres
+from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest
+
 
 from django.shortcuts import render
 from .models import Livre
@@ -17,3 +20,8 @@ def importer_livre_français(request):
 def liste_livres(request):
     livres = Livre.objects.all().order_by("-date_publication")
     return render(request, "livres/liste_livre.html", {"livres": livres})
+
+
+@login_required
+def livre_empruntes(request):
+    return render(request , 'livres/livres_empruntes.html')

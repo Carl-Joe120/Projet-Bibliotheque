@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+ 
+
+  /* --- Fòm ak kat liv yo --- */
+  .book-card {
+    border-radius: 15px;
+    overflow: hidden;
+    background: #fff;
+    transition: all 0.3s ease-in-out;
+  }
+  .book-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  /* --- Responsivite (mobil) --- */
+  @media (max-width: 992px) {
+    .filter-floating {
+      position: static;
+      width: 100%;
+      margin: 15px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .container-fluid {
+      padding-right: 15px;
+    }
+  }
+</style>
+
+<div class="container-fluid px-4">
+  
+
+  <!-- 📚 Liv yo -->
+  {% for nom_categorie, livres in livres_par_categorie.items %}
+    <div class="category-section mb-4">
+      <h4 class="text-primary fw-bold mb-3">{{ nom_categorie }}</h4>
+      <div class="d-flex overflow-auto gap-3 pb-2">
+        {% for livre in livres %}
+        <div class="book-card card shadow-sm border-0" style="min-width: 240px;">
+          {% if livre.couverture %}
+            <img src="{{ livre.couverture.url }}" class="card-img-top" style="height: 300px; object-fit: cover;">
+          {% else %}
+            <img src="https://via.placeholder.com/240x300?text=Pas+de+couverture" class="card-img-top">
+          {% endif %}
+          <div class="card-body">
+            <h6 class="fw-bold">{{ livre.titre }}</h6>
+            <p class="text-muted small mb-2"><i class="fas fa-user-edit me-1"></i>{{ livre.auteur }}</p>
+
+            <!-- 🔽 Lis déroulant type réservation -->
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="livre_id" value="{{ livre.id }}">
+              <select name="type_reservation" class="form-select form-select-sm mb-2" onchange="updateButton(this, 'btn{{ livre.id }}')">
+                <option value="physique">📘 Physique</option>
+                <option value="en_ligne">🌐 Lecture en ligne</option>
+              </select>
+              <button id="btn{{ livre.id }}" type="submit" class="btn btn-outline-primary btn-sm w-100">
+                <i class="fas fa-bookmark me-1"></i> Réserver
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="alert alert-info text-center mt-5">Aucun livre trouvé pour le moment.</div>
+  {% endfor %}
+
+<!-- JS pou chanje bouton selon sélection -->
+<script>
+  function updateButton(select, buttonId) {
+    const btn = document.getElementById(buttonId);
+    if (select.value === 'en_ligne') {
+      btn.innerHTML = '<i class="fas fa-book-open me-1"></i>Lire en ligne';
+      btn.classList.replace('btn-outline-primary', 'btn-outline-success');
+    } else {
+      btn.innerHTML = '<i class="fas fa-bookmark me-1"></i>Réserver';
+      btn.classList.replace('btn-outline-success', 'btn-outline-primary');
+    }
+  }
+</script>
+{% endblock %}

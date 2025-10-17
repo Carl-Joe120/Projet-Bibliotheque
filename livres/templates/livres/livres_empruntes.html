@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <h1 class="fw-bold text-primary"><i class="fas fa-book-reader me-2"></i>Mes Liv Empruntés</h1>
+    <span class="text-muted">Interface / Livres Empruntés</span>
+  </div>
+
+  <div class="row g-4">
+    {% for emprunt in emprunts %}
+    <div class="col-xl-4 col-md-6">
+      <div class="card border-0 shadow-sm h-100 hover-scale">
+        {% if emprunt.livre.couverture %}
+          <img src="{{ emprunt.livre.couverture.url }}" class="card-img-top rounded-top" alt="{{ emprunt.livre.titre }}">
+        {% else %}
+          <img src="https://via.placeholder.com/300x400?text=Pas+de+couverture" class="card-img-top rounded-top" alt="Pas de couverture">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title fw-semibold text-dark">{{ emprunt.livre.titre }}</h5>
+          <p class="mb-1"><i class="fas fa-user-edit me-1 text-secondary"></i><strong>Auteur:</strong> {{ emprunt.livre.auteur }}</p>
+          <p class="mb-1"><i class="fas fa-calendar-alt me-1 text-secondary"></i><strong>Emprunté le:</strong> {{ emprunt.date_emprunt }}</p>
+          <p class="mb-1"><i class="fas fa-calendar-check me-1 text-secondary"></i><strong>Retour prévu:</strong> {{ emprunt.date_retour_prevu }}</p>
+          {% if emprunt.date_retour_effectif %}
+            <p class="mb-1 text-success"><i class="fas fa-check-circle me-1"></i><strong>Retourné le:</strong> {{ emprunt.date_retour_effectif }}</p>
+          {% else %}
+            <p class="mb-1 text-muted"><i class="fas fa-clock me-1"></i><strong>Retour effectif:</strong> Pas encore</p>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center">
+          {% if emprunt.statut == 'en_cours' %}
+            <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>En cours</span>
+          {% elif emprunt.statut == 'retourne' %}
+            <span class="badge bg-success"><i class="fas fa-check me-1"></i>Retourné</span>
+          {% elif emprunt.statut == 'retard' %}
+            <span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>En retard</span>
+          {% endif %}
+          {% if emprunt.livre.lecture_en_ligne %}
+            <a href="{{ emprunt.livre.lecture_en_ligne }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-book-open me-1"></i>Lire en ligne
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info text-center shadow-sm">
+        <i class="fas fa-info-circle me-2"></i>Vous n'avez emprunté aucun livre pour le moment.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
