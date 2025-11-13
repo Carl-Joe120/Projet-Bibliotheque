@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <style>
- 
-
   /* --- Fòm ak kat liv yo --- */
   .book-card {
     border-radius: 15px;
@@ -27,17 +26,41 @@
       padding-right: 15px;
     }
   }
+
+  #live-search {
+    display: inline-block !important
+  }
+
+  #btnNavbarSearch {
+    display : inline-block !important
+  }
 </style>
 
-<div class="container-fluid px-4">
-  
 
+
+<div class="container-fluid px-4">
+  {% if aucun_resultat %}
+    <div class="alert alert-warning shadow-sm d-flex gap-3 align-items-start role="alert">
+      <div style="font-size:1.5rem; line-height:1;"> 
+        &#9888;
+        </div>
+
+        <div>
+         <h5 class="mb-1">Aucun resultat trouvé pour <<{{ query }}>>"</h5>
+          <p class="mb-2 text-muted">Essayez avec d'autres mot clés, vérifiez l'ortographe , ou parcourez nos catégories ci-dessous.</p>
+           <div class="d-flex gap-2">
+             <a href="/reservation/" class="btn btn-sm btn-outline-primary"> Réajuster la recherche</a>
+              <button type="button" class="btn btn-sm btn-primary" onclick="document.querySelector('#search-input')?.focus()">Essayez encore</button>"
+            </div>
+          </div>
+        </div>
+        {% endif %}
   <!-- 📚 Liv yo -->
   {% for nom_categorie, livres in livres_par_categorie.items %}
-    <div class="category-section mb-4">
-      <h4 class="text-primary fw-bold mb-3">{{ nom_categorie }}</h4>
-      <div class="d-flex overflow-auto gap-3 pb-2">
-        {% for livre in livres %}
+  <div class="category-section mb-4">
+    <h4 class="text-primary fw-bold mb-3">{{ nom_categorie }}</h4>
+    <div class="d-flex overflow-auto gap-3 pb-2">
+      {% for livre in livres %}
         <div class="book-card card shadow-sm border-0" style="min-width: 240px;">
           {% if livre.couverture %}
             <img src="{{ livre.couverture.url }}" class="card-img-top" style="height: 300px; object-fit: cover;">
@@ -47,39 +70,125 @@
           <div class="card-body">
             <h6 class="fw-bold">{{ livre.titre }}</h6>
             <p class="text-muted small mb-2"><i class="fas fa-user-edit me-1"></i>{{ livre.auteur }}</p>
-
-            <!-- 🔽 Lis déroulant type réservation -->
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="livre_id" value="{{ livre.id }}">
-              <select name="type_reservation" class="form-select form-select-sm mb-2" onchange="updateButton(this, 'btn{{ livre.id }}')">
-                <option value="physique">📘 Physique</option>
-                <option value="en_ligne">🌐 Lecture en ligne</option>
-              </select>
-              <button id="btn{{ livre.id }}" type="submit" class="btn btn-outline-primary btn-sm w-100">
-                <i class="fas fa-bookmark me-1"></i> Réserver
-              </button>
-            </form>
+            <button class="btn btn-outline-primary btn-sm w-100"
+                    data-bs-toggle="modal" data-bs-target="#bookModal"
+                    onclick="openBookModal('{{ livre.id }}', '{{ livre.titre }}', '{{ livre.auteur }}', '{{ livre.resume|escapejs }}', '{{ livre.date_publication }}', '{{ livre.couverture.url|default:'' }}', '{{ livre.lecture_en_ligne|default:'' }}')">
+              <i class="fas fa-info-circle me-1"></i> Détails
+            </button>
           </div>
         </div>
-        {% endfor %}
+      {% endfor %}  <!-- inner loop fini -->
+    </div>
+  </div>
+{% endfor %}
+  <!-- outer if fini -->
+</div>  
+       <!-- MODAL DETAIL LIV -->
+<div class="modal fade" id="bookModal" tabindex="-1" aria-labelledby="bookModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0 rounded-4">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="bookModalLabel"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <img id="bookCover" class="img-fluid rounded" alt="Couverture du livre">
+          </div>
+          <div class="col-md-8">
+            <p><strong>Auteur :</strong> <span id="bookAuthor"></span></p>
+            <p><strong>Date de publication :</strong> <span id="bookDate"></span></p>
+            <p class="small text-muted" id="bookResume"></p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button id="readOnlineBtn" class="btn btn-success">
+          <i class="fas fa-book-open me-1"></i> Lire en ligne
+        </button>
+        <button id="reserveBtn" class="btn btn-primary">
+          <i class="fas fa-bookmark me-1"></i> Réserver
+        </button>
       </div>
     </div>
-  {% empty %}
-    <div class="alert alert-info text-center mt-5">Aucun livre trouvé pour le moment.</div>
-  {% endfor %}
+  </div>
+</div>
+
+<!-- MODAL RESERVATION FORM -->
+<div class="modal fade" id="reserveModal" tabindex="-1" aria-labelledby="reserveModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="reserveModalLabel">Confirmer la réservation</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      
+      <form id="reserveForm" method="POST" >
+  {% csrf_token %}
+  <div class="modal-body">
+    <div class="mb-3">
+      <label for="message_utilisateur" class="form-label">Message (optionnel)</label>
+        {{ form.message_utilisateur }}
+        
+    </div>
+    <input type="hidden" name="livre_id" id="livre_id_field">
+  </div>
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-success w-100">Confirmer</button>
+  </div>
+</form>
+
+
+
+    </div>
+  </div>
+</div>
+
 
 <!-- JS pou chanje bouton selon sélection -->
 <script>
-  function updateButton(select, buttonId) {
-    const btn = document.getElementById(buttonId);
-    if (select.value === 'en_ligne') {
-      btn.innerHTML = '<i class="fas fa-book-open me-1"></i>Lire en ligne';
-      btn.classList.replace('btn-outline-primary', 'btn-outline-success');
-    } else {
-      btn.innerHTML = '<i class="fas fa-bookmark me-1"></i>Réserver';
-      btn.classList.replace('btn-outline-success', 'btn-outline-primary');
-    }
-  }
+function openBookModal(id, titre, auteur, resume, date, couverture, lecture) {
+  document.getElementById('bookModalLabel').innerText = titre;
+  document.getElementById('bookAuthor').innerText = auteur;
+  document.getElementById('bookDate').innerText = date;
+  document.getElementById('bookResume').innerText = resume;
+  document.getElementById('livre_id_field').value = id;
+  document.getElementById('bookCover').src = couverture || 'https://via.placeholder.com/300x400?text=Pas+de+couverture';
+
+  //  Lè itilizatè a klike sou “Réserver”
+  const reserveBtn = document.getElementById('reserveBtn');
+  reserveBtn.onclick = () => {
+    // Ranpli action Django a kòrèkteman (pa literal ${})
+    const form = document.getElementById('reserveForm');
+    form.action = `/reservation/reserver/${id}/`;
+
+    // Fèmen premye modal la, ouvri modal fòm nan
+    const modal1 = bootstrap.Modal.getInstance(document.getElementById('bookModal'));
+    modal1.hide();
+    new bootstrap.Modal(document.getElementById('reserveModal')).show();
+  };
+
+  
+}
+
+document.addEventListener('DOMContentLoaded' , function() {
+  {% if messages %}
+    {% for message in messages %}
+      alert("{{ message }}");
+    {% endfor %}
+
+  {% endif %}
+
+});
+
+
+  
+
+
 </script>
+
+
+
 {% endblock %}

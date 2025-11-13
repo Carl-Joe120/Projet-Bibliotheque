@@ -198,5 +198,5 @@ def importer_livres(keywords=None, total=200):
                 if used_google:
                     google_used += 1
 
-    print(f"✅ Total livres importés: {total_imported} (dont {google_used} complétés via Google Books)")
+    print(f" Total livres importés: {total_imported} (dont {google_used} complétés via Google Books)")
     return total_imported, google_used

@@ -25,7 +25,7 @@ def default_date_expiration():
 class Reservation(models.Model):
     utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     livre = models.ForeignKey(Livre , on_delete=models.CASCADE)
-    date_reservation = models.DateField(auto_now_add=True)
+    date_reservation = models.DateTimeField(auto_now_add=True)
     date_expiration = models.DateField(default=default_date_expiration)
     confirme = models.BooleanField(default=False)
     qr_code = models.ImageField(upload_to='qr_codes/', blank=True , null=True)
@@ -34,34 +34,23 @@ class Reservation(models.Model):
     livre_demande = models.CharField(max_length= 255 , blank=True , null= True)
     message_utilisateur = models.TextField(blank=True , null= True)
     date_confirmation = models.DateField(blank=True , null= True)
-    
-
-    def __str__(self):
-        return f"Reservation de {self.utilisateur} pour {self.livre}"
-
 
     def est_expire(self):
         return date.today() > self.date_expiration
 
-    def generer_qr_code(self , *args , **kwargs):        
-            qr_image = qrcode.make(f"Reservation: {self.utilisateur} -> {self.livre} le {self.date_reservation}" )
-            canvas = Image.new('RGB' , qr_image.size , 'white')
-            canvas.paste(qr_image)
-            buffer = BytesIO()
-            canvas.save(buffer, 'PNG')
-            filename = f"qr_reservation_{self.pk}.png"
-            self.qr_code.save(filename, File(buffer), save=False)
-            buffer.close()
-
-
-
-    def enregistrer(self , *args , **kwargs):
-         if not self.qr_code:
-              self.generer_qr_code()
-         if self.est_expire() and self.statut != ReservationStatus.EXPIREE:
-              self.statut = ReservationStatus.EXPIREE
-         super().save(*args , **kwargs)
-              
-
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         
+        if not self.qr_code:
+            qr_data = f"Reservation ID: {self.id}\nUtiliateur: {self.utilisateur.username}\nLivre: {self.livre.titre}\nDate: {self.date_reservation}\nExpiration: {self.date_expiration}"
+            qr_image = qrcode.make(qr_data)
+            buffer = BytesIO()
+            qr_image.save(buffer , format='PNG')
+            filename = f'Reservation_{self.id}.png'
+            self.qr_code.save(filename , File(buffer) , save = False)
+            super().save(*args , **kwargs)
+
+    def __str__(self):
+        return f"Reservation de {self.utilisateur} pour {self.livre}"
+    
 

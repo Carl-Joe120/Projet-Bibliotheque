@@ -6,8 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
-<body>
-  
+
+<style>
+
+    #live-search {
+        display: none !important;
+
+    }
+
+    #btnNavbarSearch {
+        display : none !important;
+    }
+    
+</style>  
+
 <body class="sb-nav-fixed">
   {% include "include/layout_header.html" %}
   <div id="layoutSidenav">
@@ -27,7 +39,84 @@
 
 {% include "include/layout_footer.html" %}
 
+            </div>
+            </div>
+
 {% block extra_js %}
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById('live-search');
+    if (!input) return;
+
+    let timeout = null;
+
+    input.addEventListener('keyup', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            const query = input.value;
+
+            fetch(`{% url 'trouver_auteur_ou_titre' %}?q=${encodeURIComponent(query)}`)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.querySelector('.container-fluid');
+                    if (newContent) {
+                        document.querySelector('.container-fluid').innerHTML = newContent.innerHTML;
+                    }
+                });
+        }, 300);
+    });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-pFQdyP4s3fLbJXylx9AENc+8eT6rUdTAtdFhK5QaxFv4JZKfQZm9yUnwMGs3D0mR" crossorigin="anonymous"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Inisyalize tout dropdown bootstrap yo manyèlman
+      const dropdowns = document.querySelectorAll('.dropdown-toggle');
+      dropdowns.forEach(function (dropdownToggleEl) {
+          new bootstrap.Dropdown(dropdownToggleEl);
+      });
+  });
+  </script>
+
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('logoutBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async function (e) {
+      e.preventDefault();
+      const form = document.getElementById('logout-form');
+      const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrf, 'Accept': 'text/html' },
+          credentials: 'same-origin'
+        });
+        if (res.ok) {
+          
+          alert('Vous avez été déconnecté avec succès ');
+          //Redirection vers un autre page
+          window.location.href = "{% url 'loginview' %}";
+        } else {
+          alert('Echèk dekoneksyon. Eseye ankò.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Yon erè rive. Tanpri eseye ankò.');
+      }
+    });
+  });
+  </script>
+</body>
+</html>
 
 {% endblock extra_js %}
 

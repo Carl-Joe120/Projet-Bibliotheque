@@ -1,0 +1,30 @@
+<div class="container py-5">
+  <div class="card shadow-lg border-0">
+    <div class="card-body text-center">
+      <h4 class="mb-3 text-primary"><i class="fas fa-qrcode"></i> Détails de votre réservation</h4>
+      <p><strong>Livre :</strong> {{ reservation.livre.titre }}</p>
+      <p><strong>Auteur :</strong> {{ reservation.livre.auteur }}</p>
+      <p><strong>Date :</strong> {{ reservation.date_reservation }}</p>
+      <p><strong>Expiration :</strong> {{ reservation.date_expiration }}</p>
+      <p><strong>Type :</strong> {{ reservation.type_reservation }}</p>
+      <p><strong>Statut :</strong>
+        <span class="badge {% if reservation.statut == 'confirmee' %}bg-success
+                        {% elif reservation.statut == 'annulee' %}bg-danger
+                        {% else %}bg-warning text-dark{% endif %}">
+          {{ reservation.get_statut_display }}
+        </span>
+      </p>
+      {% if reservation.qr_code %}
+         <img src="{{ reservation.qr_code.url }}" alt="QR Code"
+     class="img-fluid mt-3 animate__animated animate__pulse animate__delay-1s" width="180">
+      {% endif %}
+
+     
+
+      <hr>
+      <a href="" class="btn btn-outline-primary mt-3">
+        <i class="fas fa-list"></i> Voir mes réservations
+      </a>
+    </div>
+  </div>
+</div>
