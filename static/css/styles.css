@@ -11714,3 +11714,99 @@ body {
     border-radius: 0 30px 30px 0;
   }
 
+/* ======== ANIMATION SUR CARDS ======== */
+.card {
+    transition: all 0.25s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important;
+}
+
+/* ======== ANIMATION SUR BOUTONS ======== */
+.btn {
+    transition: all 0.22s ease-in-out;
+}
+.btn:hover {
+    transform: scale(1.04);
+}
+
+/* ======== ANIMATION SUR LINKS ======== */
+a {
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+a:hover {
+    opacity: 0.75;
+}
+
+@media (max-width: 768px) {
+    .card {
+        border-radius: 20px !important;
+    }
+
+    .btn {
+        padding: 14px !important;
+        font-size: 1rem;
+    }
+
+    h3, h4, h5 {
+        font-size: 1.1rem;
+    }
+
+    #layoutSidenav_content {
+        padding: 12px;
+    }
+}
+
+/* Rezoud dropdown kouvri bouton Modifier */
+.profile-hero {
+    position: relative;
+    z-index: 1;
+}
+
+/* Dropdown yo pi wo pase profil la */
+.dropdown-menu {
+    z-index: 2000 !important;
+}
+
+/* Modal toujou anlè tout bagay */
+.modal {
+    z-index: 2050 !important;
+}
+
+/* Avatar modèn ak responsive */
+.avatar-outer {
+    width: clamp(110px, 18vw, 150px);
+    height: clamp(110px, 18vw, 150px);
+    border-radius: 50%;
+    padding: 5px;
+    background: linear-gradient(135deg,#007bff, #00c6ff);
+    display: inline-block;
+    box-shadow: 0 6px 22px rgba(3,10,34,0.08);
+}
+
+.avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    background: white;
+}
+
+.avatar-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+
+.reservation-card {
+  transition: transform 0.25s ease , box-shadow 0.25s ease;
+}
+
+.reservation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 22px rgba(0 , 0 , 0 , 0.15);
+}
+

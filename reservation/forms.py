@@ -4,7 +4,7 @@ from .models import Reservation
 class ReservationForms(forms.ModelForm):
     class Meta:
         model = Reservation
-        fields = ['message_utilisateur','statut']
+        fields = ['message_utilisateur']
 
         widgets = {
            

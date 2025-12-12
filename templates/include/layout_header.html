@@ -17,13 +17,18 @@
             <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    {% if user.photo_profil %}
     <img src="{{ user.photo_profil.url }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+{% else %}
+    <img src="/static/images/default_avatar.png" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+{% endif %}
+
     <span> {{user.get_full_name}}</span>
 </a>
 
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="#!">Parametre</a></li>
-                        <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+                        <li><a class="dropdown-item" href="{% url 'mon_profil'  %}">Mon Profil</a></li>
+                        <li><a class="dropdown-item" href={% url 'securite_compte'  %}>Sécurité du compte</a></li>
                         <li><hr class="dropdown-divider" /></li>
                         <li>
                             <form id="logout-form" method="post" action="{% url 'log_out' %}" class="m-0">

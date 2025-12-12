@@ -8,14 +8,14 @@ from django.contrib.auth.admin import UserAdmin
 
 
 class UtilisateurAdmin(UserAdmin):
-    add_form = SignupForm
-    form = CustomUserChangeForm
+    #add_form = SignupForm
+    #form = CustomUserChangeForm
     model = Utilisateur
     list_display = ('username' , 'email' , 'role' , 'is_staff' , 'is_active')
     list_filter = ('role' , 'is_staff' , 'is_active')
     fieldsets = (
         (None , {'fields':('username' , 'email' , 'password')}),
-        ('Informations personnelles', {'fields':('first_name', 'last_name' , 'role' , 'telephone', 'adresse' , 'photo_profil' , 'numero_membre')}),
+        ('Informations personnelles', {'fields':('first_name', 'last_name' , 'role' , 'telephone', 'adresse' , 'photo_profil' , 'numero_membre', 'date_de_naissance')}),
         ('Permissions', {'fields': ('is_staff' , 'is_active' , 'is_superuser')}),
     
     )

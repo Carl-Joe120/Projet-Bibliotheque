@@ -11,7 +11,7 @@ class AdminCategorie(admin.ModelAdmin):
 
 @admin.register(Livre)
 class AdminLivre(admin.ModelAdmin):
-    list_display = ('titre','auteur','isbn','date_publication','categorie','disponible','couverture')
+    list_display = ('titre','auteur','isbn','date_publication','categorie','couverture')
     list_filter = ['auteur']
     search_fields = ['titre' , 'categorie']
     list_per_page = 5

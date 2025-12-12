@@ -9,18 +9,87 @@
 
 <style>
 
-    #live-search {
-        display: none !important;
+#live-search {
+    display: none !important;
+}
 
-    }
+#btnNavbarSearch {
+    display: none !important;
+}
 
-    #btnNavbarSearch {
-        display : none !important;
-    }
-    
-</style>  
+.toast-container-center {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.toast-center {
+    display: flex;
+    align-items: center;
+    min-width: 350px;
+    max-width: 500px;
+    padding: 15px 20px;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.25);
+    opacity: 0;
+    animation: slideFadeIn 0.5s forwards, slideFadeOut 0.5s forwards 3.5s;
+}
+
+.toast-icon {
+    font-size: 20px;
+    margin-right: 12px;
+}
+
+.toast-message {
+    flex: 1;
+}
+
+/* Koulè selon type */
+.toast-success { background-color: #28a745; }
+.toast-error { background-color: #dc3545; }
+.toast-warning { background-color: #ffc107; color: #000; }
+.toast-info { background-color: #17a2b8; }
+
+/* Animasyon slide + fade */
+@keyframes slideFadeIn {
+    from { transform: translateY(-50px) translateX(-50%) scale(0.9); opacity: 0; }
+    to { transform: translateY(0) translateX(-50%) scale(1); opacity: 1; }
+}
+
+@keyframes slideFadeOut {
+    to { transform: translateY(-50px) translateX(-50%) scale(0.9); opacity: 0; }
+}
+
+</style>
+
 
 <body class="sb-nav-fixed">
+    
+   <!-- TOASTS MIZAN MITAN EKRAN -->
+<div class="toast-container-center">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="toast-center toast-{{ message.tags }}">
+                <div class="toast-icon">
+                    {% if message.tags == 'success' %}✔{% elif message.tags == 'error' %}❌
+                    {% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+                </div>
+                <div class="toast-message">{{ message }}</div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+
   {% include "include/layout_header.html" %}
   <div id="layoutSidenav">
     {% include "include/layout_sidebar.html" %}
@@ -28,6 +97,8 @@
      <div id="layoutSidenav_content">
                
 				<main>
+        
+    <!-- END ALERT -->
     {% block content %}
     
     
@@ -44,81 +115,106 @@
 
 {% block extra_js %}
 
-
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
+
+    function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+
+    
+    const toast = document.createElement('div');
+    toast.classList.add('custom-toast');
+
+    
+    if (type === 'success') {
+        toast.classList.add('toast-success');
+    } else if (type === 'error') {
+        toast.classList.add('toast-error');
+    } else if (type === 'warning') {
+        toast.classList.add('toast-warning');
+    }
+
+    toast.textContent = message;
+
+    
+    toastContainer.appendChild(toast);
+
+   
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+    
     const input = document.getElementById('live-search');
-    if (!input) return;
+    if (input) {
+        let timeout = null;
+        input.addEventListener('keyup', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                const query = input.value;
+                fetch(`{% url 'trouver_auteur_ou_titre' %}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newContent = doc.querySelector('.container-fluid');
+                        if (newContent) {
+                            document.querySelector('.container-fluid').innerHTML = newContent.innerHTML;
+                        }
+                    });
+            }, 300);
+        });
+    }
 
-    let timeout = null;
+    
+    
+    const dropdowns = document.querySelectorAll('.dropdown-toggle');
+    dropdowns.forEach(el => new bootstrap.Dropdown(el));
 
-    input.addEventListener('keyup', function() {
-        clearTimeout(timeout);
-        timeout = setTimeout(function() {
-            const query = input.value;
 
-            fetch(`{% url 'trouver_auteur_ou_titre' %}?q=${encodeURIComponent(query)}`)
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const newContent = doc.querySelector('.container-fluid');
-                    if (newContent) {
-                        document.querySelector('.container-fluid').innerHTML = newContent.innerHTML;
-                    }
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const form = document.getElementById('logout-form');
+            const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrf },
+                    credentials: 'same-origin'
                 });
-        }, 300);
+
+                if (res.ok) {
+                    showToast('Vous avez été déconnecté avec succès', 'success');
+                    window.location.href = "{% url 'loginview' %}";
+                } else {
+                    showToast('Une erreur s’est produite, essayez à nouveau.', 'error');
+                }
+
+            } catch (err) {
+                showToast('Erreur interne. Réessayez.', 'error');
+            }
+        });
+    }
+
+    
+    const toasts = document.querySelectorAll('.toast-center');
+    toasts.forEach(function (toast) {
+        setTimeout(() => toast.remove(), 4000);
     });
 });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-pFQdyP4s3fLbJXylx9AENc+8eT6rUdTAtdFhK5QaxFv4JZKfQZm9yUnwMGs3D0mR" crossorigin="anonymous"></script>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      // Inisyalize tout dropdown bootstrap yo manyèlman
-      const dropdowns = document.querySelectorAll('.dropdown-toggle');
-      dropdowns.forEach(function (dropdownToggleEl) {
-          new bootstrap.Dropdown(dropdownToggleEl);
-      });
-  });
-  </script>
-
-
-  <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const btn = document.getElementById('logoutBtn');
-    if (!btn) return;
-
-    btn.addEventListener('click', async function (e) {
-      e.preventDefault();
-      const form = document.getElementById('logout-form');
-      const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
-      try {
-        const res = await fetch(form.action, {
-          method: 'POST',
-          headers: { 'X-CSRFToken': csrf, 'Accept': 'text/html' },
-          credentials: 'same-origin'
-        });
-        if (res.ok) {
-          
-          alert('Vous avez été déconnecté avec succès ');
-          //Redirection vers un autre page
-          window.location.href = "{% url 'loginview' %}";
-        } else {
-          alert('Echèk dekoneksyon. Eseye ankò.');
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Yon erè rive. Tanpri eseye ankò.');
-      }
-    });
-  });
-  </script>
-</body>
-</html>
-
 {% endblock extra_js %}
-
 </body>
 </html>

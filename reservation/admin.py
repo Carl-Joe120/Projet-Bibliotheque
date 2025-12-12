@@ -6,7 +6,7 @@ from reservation.models import Reservation
 
 @admin.register(Reservation)
 class AdminReservation(admin.ModelAdmin):
-    list_display = ('utilisateur','livre' , 'date_reservation' , 'date_expiration' , 'confirme' , 'qr_code')
+    list_display = ('utilisateur','livre' , 'date_reservation' , 'date_expiration'  , 'qr_code')
     list_filter = ['utilisateur']
     search_fields = ['livre']
     list_per_page = 5

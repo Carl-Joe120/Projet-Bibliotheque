@@ -23,10 +23,10 @@ class Livre(models.Model):
     resume = models.TextField(blank= True)
     date_publication = models.DateField()
     categorie = models.ForeignKey(Categorie , on_delete=models.SET_NULL , null=True)
-    tags = models.ManyToManyField(Tags , blank= True)
-    disponible = models.BooleanField(default=True)
+    tags = models.ManyToManyField(Tags , blank= True)    
     couverture = models.ImageField(upload_to='couvertures/', blank=True , null=True)
     lecture_en_ligne = models.URLField(blank= True , null=True , default=None)
+    quantite = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.titre} - {self.auteur}"

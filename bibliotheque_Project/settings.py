@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from django.urls import reverse_lazy as reverse_Lazy
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,6 +32,7 @@ SECRET_KEY = 'django-insecure-p^1sfx8)f_r5@e2varlj2w41y!-g3%7fmpnb6*ma!jm@-1t*_&
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 
 ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'utilisateurs.Utilisateur'
@@ -69,7 +72,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+
 ROOT_URLCONF = 'bibliotheque_Project.urls'
+LOGIN_URL = reverse_Lazy('loginview')
+LOGIN_REDIRECT_URL =  reverse_Lazy('index')
+LOGOUT_REDIRECT_URL = reverse_Lazy('loginview')
+
 
 TEMPLATES = [
     {
@@ -143,6 +152,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
 
 
 # Static files (CSS, JavaScript, Images)

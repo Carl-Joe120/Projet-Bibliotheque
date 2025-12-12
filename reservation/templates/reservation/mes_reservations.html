@@ -1,30 +1,129 @@
-<div class="container py-5">
-  <div class="card shadow-lg border-0">
-    <div class="card-body text-center">
-      <h4 class="mb-3 text-primary"><i class="fas fa-qrcode"></i> Détails de votre réservation</h4>
-      <p><strong>Livre :</strong> {{ reservation.livre.titre }}</p>
-      <p><strong>Auteur :</strong> {{ reservation.livre.auteur }}</p>
-      <p><strong>Date :</strong> {{ reservation.date_reservation }}</p>
-      <p><strong>Expiration :</strong> {{ reservation.date_expiration }}</p>
-      <p><strong>Type :</strong> {{ reservation.type_reservation }}</p>
-      <p><strong>Statut :</strong>
-        <span class="badge {% if reservation.statut == 'confirmee' %}bg-success
-                        {% elif reservation.statut == 'annulee' %}bg-danger
-                        {% else %}bg-warning text-dark{% endif %}">
-          {{ reservation.get_statut_display }}
-        </span>
-      </p>
-      {% if reservation.qr_code %}
-         <img src="{{ reservation.qr_code.url }}" alt="QR Code"
-     class="img-fluid mt-3 animate__animated animate__pulse animate__delay-1s" width="180">
-      {% endif %}
+{% extends "base.html" %}
 
-     
+{% block title %}Mes Réservations{% endblock %}
 
-      <hr>
-      <a href="" class="btn btn-outline-primary mt-3">
-        <i class="fas fa-list"></i> Voir mes réservations
-      </a>
+{% block content %}
+
+<div class="container-fluid px-4">
+
+    <h1 class="mt-4 fw-bold">Mes Réservations</h1>
+    <p class="text-muted mb-4">Consultez l’état de vos réservations en temps réel.</p>
+
+    <div class="row g-4">
+
+        {% if reservations %}
+            {% for r in reservations %}                
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 h-100 reservation-card">
+
+                    <!-- Header Image -->
+                    <div class="card-img-top bg-light d-flex justify-content-center align-items-center" 
+                         style="height:160px; overflow:hidden;">
+                        {% if r.livre.image %}
+                            <img src="{{ r.livre.image.url }}" class="img-fluid rounded-top" style="object-fit:cover; height:100%; width:100%;">
+                        {% else %}
+                            <i class="fas fa-book text-secondary" style="font-size:70px;"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- Book Title -->
+                        <h5 class="fw-bold">{{ r.livre.titre }}</h5>
+                        <p class="text-muted mb-2">{{ r.livre.auteur }}</p>
+
+                        <!-- Date -->
+                        <p class="small text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Réservé le {{ r.date_reservation|date:"d/m/Y H:i" }}
+                        </p>
+
+                        <!-- Status Badge -->
+                        <div class="mb-3">
+                            {% if r.statut == "en_attente" %}
+                                <span class="badge bg-warning text-dark px-3 py-2">En attente</span>
+
+                            {% elif r.statut == "confirmee" %}
+                                <span class="badge bg-success px-3 py-2">Confirmée</span>
+
+                            {% elif r.statut == "annulee" %}
+                                <span class="badge bg-danger px-3 py-2">Annulée</span>
+
+                            {% elif r.statut == "expiree" %}
+                                <span class="badge bg-secondary px-3 py-2">Expirée</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action -->
+                    {% if r.statut == "en_attente" %}
+                    <button
+                        class="btn btn-outline-danger w-100 rounded-pill btn-cancel"
+                        data-id="{{ r.id}}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cancelModal">
+                        Annuler
+                    </button>                    
+                            
+                    {% endif %}
+                           
+
+
+                    </div>
+
+                </div>
+            </div>
+
+            {% endfor %}
+        {% else %}
+
+        <!-- Empty State -->
+        <div class="col-12">
+            <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                <i class="fas fa-calendar-times text-muted" style="font-size:70px;"></i>
+                <p class="mt-3 fs-5 text-muted">Vous n'avez aucune réservation pour le moment.</p>
+            </div>
+        </div>
+
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Modal Annulation -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirmer l'annulation</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        Êtes vous certains de vouloir annuler cette réservation ?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
+        <a id="confirmCancelBtn" class="btn btn-danger">Oui, annuler</a>
+      </div>
+
     </div>
   </div>
 </div>
+
+<script>
+    let selectedReservationID = null;
+
+document.querySelectorAll(".btn-cancel").forEach(btn => {
+    btn.addEventListener("click", function() {
+        selectedReservationID = this.dataset.id;
+        document.getElementById("confirmCancelBtn").href =
+                 "{% url 'annuler_reservation' 999 %}".replace("999" , selectedReservationID);
+    });
+});
+</script>
+
+
+{% endblock %}

@@ -4,7 +4,7 @@ from utilisateurs.models import Role , Utilisateur
 
 
 class CustomUserChangeForm(UserChangeForm):
-     class Meta:
+     class Meta:       
         model = Utilisateur
         fields = ('username' , 'email' , 'first_name' , 'last_name', 'role' , 'telephone' , 'adresse' , 'photo_profil' , 'is_active' , 'is_staff' , 'is_superuser')       
         

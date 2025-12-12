@@ -40,7 +40,7 @@
 
 <div class="container-fluid px-4">
   {% if aucun_resultat %}
-    <div class="alert alert-warning shadow-sm d-flex gap-3 align-items-start role="alert">
+    <div class="alert alert-warning shadow-sm d-flex gap-3 align-items-start" role="alert">
       <div style="font-size:1.5rem; line-height:1;"> 
         &#9888;
         </div>
@@ -55,7 +55,7 @@
           </div>
         </div>
         {% endif %}
-  <!-- 📚 Liv yo -->
+  <!-- Liv yo -->
   {% for nom_categorie, livres in livres_par_categorie.items %}
   <div class="category-section mb-4">
     <h4 class="text-primary fw-bold mb-3">{{ nom_categorie }}</h4>
@@ -125,7 +125,7 @@
       </div>
 
       
-      <form id="reserveForm" method="POST" >
+      <form id="reserveForm" method="POST"  >
   {% csrf_token %}
   <div class="modal-body">
     <div class="mb-3">
@@ -172,20 +172,6 @@ function openBookModal(id, titre, auteur, resume, date, couverture, lecture) {
 
   
 }
-
-document.addEventListener('DOMContentLoaded' , function() {
-  {% if messages %}
-    {% for message in messages %}
-      alert("{{ message }}");
-    {% endfor %}
-
-  {% endif %}
-
-});
-
-
-  
-
 
 </script>
 
