@@ -92,6 +92,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'notifications.context_processors.notifications_nav',
             ],
         },
     },
@@ -99,6 +100,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bibliotheque_Project.wsgi.application'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'bibliothequemichelt@gmail.com'
+EMAIL_HOST_PASSWORD = 'srlc fsat akpn pbht'
+DEFAULT_FROM_EMAIL = 'Bbliotheque Michel Tardieu <bibliothequemichelt@gmail.com>'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

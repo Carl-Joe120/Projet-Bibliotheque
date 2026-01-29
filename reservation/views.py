@@ -10,6 +10,8 @@ from .forms import ReservationForms
 from django.contrib import messages
 from django.template.loader import render_to_string
 import pdfkit
+from django.db import transaction
+from .utils import generer_pdf_qr
 
 # Create your views here.
 '''
@@ -87,93 +89,113 @@ def trouver_auteur_ou_titre(request):
 
     return render(request, 'reservation/form_reservation.html', context)
 
+
 def livre_disponible(livre):
-    quantite = getattr(livre, "quantite", 1)
-
-    reservations_actives = Reservation.objects.filter(
-        livre=livre,
-        statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
-    ).count()
-
-    emprunts_actifs = Emprunt.objects.filter(
+   
+    emprunts_en_cours = Emprunt.objects.filter(
         livre=livre,
         statut="en_cours"
     ).count()
+    
+    reservations_actives = Reservation.objects.filter(
+        livre=livre,
+        statut__in=[
+            ReservationStatus.EN_ATTENTE,
+            ReservationStatus.CONFIRMEE
+        ]
+    ).count()
 
-    return (quantite - reservations_actives - emprunts_actifs) > 0
+    total_utilise = emprunts_en_cours + reservations_actives
+
+    return total_utilise < livre.quantite
+
 
 @login_required
 def reserver_livre(request, id):
-    livre = get_object_or_404(Livre, id=id)
+    MAX_EMPRUNTS = 3 
+    MAX_RESERVATIONS = 3
+    with transaction.atomic():
+        livre = get_object_or_404(Livre, id=id)
+        
+        # 2 — VÉRIFIER RETARDS
+        if Emprunt.objects.filter(utilisateur=request.user, statut="retard").exists():
+            messages.error(request, "Désolé ! Vous avez des retards. Réservation impossible.")
+            return redirect("afficher_page_reservation")
 
-    # 2 — VÉRIFIER RETARDS
-    if Emprunt.objects.filter(utilisateur=request.user, statut="retard").exists():
-        messages.error(request, "D;esolé ! Vous avez des retards. Réservation impossible.")
-        return redirect("afficher_page_reservation")
+        #3 — VÉRIFIER DISPONIBILITÉ
+        if not livre_disponible(livre):
+            messages.error(request, "Désolé ! Ce livre n'est plus disponible.")
+            return redirect("afficher_page_reservation")
 
-     #3 — VÉRIFIER DISPONIBILITÉ
-    if not livre_disponible(livre):
-        messages.error(request, "Désolé ! Ce livre n'est plus disponible.")
-        return redirect("afficher_page_reservation")
+        # 4 — UTILISATEUR A DÉJÀ RÉSERVÉ CE LIVRE ?
+        deja_reserve = Reservation.objects.filter(
+            utilisateur=request.user,
+            livre=livre,
+            statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
+        ).exists()
+        
+        if deja_reserve:
+            messages.error(request , "Désolé ! Vous avez déjà une réservation active pour ce livre")
+            return redirect("afficher_page_reservation")
 
-    # 4 — UTILISATEUR A DÉJÀ RÉSERVÉ CE LIVRE ?
-    deja_reserve = Reservation.objects.filter(
-        utilisateur=request.user,
-        livre=livre,
-        statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
-     ).exists()
-    
-    if deja_reserve:
-        messages.error(request , "Désolé ! Vous avez déjà une réservation active pour ce livre")
-        return redirect("afficher_page_reservation")
+        #5 — LIMITE MAX DE RÉSERVATIONS
+        nb_reservations =  Reservation.objects.filter(
+            utilisateur=request.user,
+            statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
+        ).count() 
+        
+        
+        #Le membre ne peut pas avoir plus de 3 reservations en cours
+        if nb_reservations >= MAX_RESERVATIONS:
+            messages.error(request , "Désolé! Vous avez déjà atteint 3 réservations en cours alors vous ne pouvez pas faire de réservation")
+            return redirect("afficher_page_reservation")
+        
+        
+        #Le membre ne peut pas avoir plus de 3 emprunts en cours
+        nb_emprunts = Emprunt.objects.filter(utilisateur = request.user , statut = "en_cours").count()
+        
+        if nb_emprunts >= MAX_EMPRUNTS:
+            messages.error(request , "Désolé! Vous avez déjà atteint 3 emprunts en cours alors vous ne pouvez pas faire de réservation")
+            return redirect("afficher_page_reservation")
+        
+        
+        if Reservation.est_expire:
+            Reservation.statut = ReservationStatus.ANNULEE
 
-    #5 — LIMITE MAX DE RÉSERVATIONS
-    nb_reservations =  Reservation.objects.filter(
-        utilisateur=request.user,
-        statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
-    ).count() 
-    
-    
-    
-    if nb_reservations >= 3:
-        messages.error(request , "Désolé! Vous avez atteint la limite de réservations")
-        return redirect("afficher_page_reservation")
+        #6 — TRAITEMENT FORMULAIRE AVEC DJANGO ModelForm
+        if request.method == "POST":
+            form = ReservationForms(request.POST)
+            if form.is_valid():
+                reservation = form.save(commit=False)
+                reservation.utilisateur = request.user            
+                reservation.livre = livre
+                reservation.type_reservation = "physique"
+                reservation.statut = ReservationStatus.EN_ATTENTE
+                reservation.message_utilisateur = form.cleaned_data.get("message_utilisateur", "")
+                reservation.confirme = False
+                reservation.save()                
 
-    #6 — TRAITEMENT FORMULAIRE AVEC DJANGO ModelForm
-    if request.method == "POST":
-        form = ReservationForms(request.POST)
-        if form.is_valid():
-            reservation = form.save(commit=False)
-            reservation.utilisateur = request.user            
-            reservation.livre = livre
-            reservation.type_reservation = "physique"
-            reservation.statut = ReservationStatus.EN_ATTENTE
-            reservation.message_utilisateur = form.cleaned_data.get("message_utilisateur", "")
-            reservation.confirme = False
-            reservation.save()
+                messages.success(request, "Votre demande de réservation est envoyée.")
+                return redirect("mes_reservations")
 
-            messages.success(request, "Votre demande de réservation est envoyée.")
-            return redirect("mes_reservations")
-
-        else:
-            messages.error(request, "Erreur dans le formulaire.")
-
-    
-    return redirect("afficher_page_reservation")
+            else:
+                messages.error(request, "Erreur dans le formulaire.")
 
         
-@login_required 
-def telecharger_recu(request , id):
-    telechargement = get_object_or_404(Reservation , id = id)
+        return redirect("afficher_page_reservation")
+
+        
+#detail sur une resservation précise d'un utilisateur
+
+@login_required
+def detail_reservation(request , id):
+    reservation = get_object_or_404(Reservation , id = id , utilisateur = request.user)
     context = {
-        'telechargement' : telechargement
+        
+        "reservation" : reservation
     }
     
-    html = render_to_string('reservation/recu_template.html' , context)
-    
-    pdf = pdfkit.from_string(html , False)
-    reponse = HttpResponse(pdf , content_type = 'application/pdf')
-    reponse['Content-Disposition'] = f'attachement; filename="recu_reservation_{id}.pdf"'
+    return render (request , 'reservation/detail_reservation.html' , context)
     
     
 @login_required
@@ -220,7 +242,7 @@ def gestion_reservations(request):
 def confirmer_reservation(request , id):
     reservation = get_object_or_404(Reservation , id = id)
     
-    if reservation != ReservationStatus.EN_ATTENTE:
+    if reservation.statut != ReservationStatus.EN_ATTENTE:
         messages.warning(request , "Cette réservation n'est pas en attente et peut donc pas être confirmée")
         
     reservation.statut = ReservationStatus.CONFIRMEE
@@ -242,6 +264,71 @@ def rejeter_reservation(request , id):
     reservation.save()
     messages.success(request , "Réservation rejetée avec succès")
     
+@login_required
+def liste_reservations(request):
+    reservations = (Reservation.objects.filter(statut= ReservationStatus.EN_ATTENTE).select_related("livre" , "utilisateur").order_by('-date_reservation'))
+    
+    context = {
+        'reservations' : reservations
+    }
+    return render(request , 'reservation/liste_reservations.html' , context)
+    
 
-        
-       
+@login_required
+def reservation_detail_ajax(request, reservation_id):
+    reservation = get_object_or_404(
+        Reservation.objects.select_related("livre", "utilisateur"),
+        id=reservation_id
+    )
+
+    a_retard = Emprunt.objects.filter(
+        utilisateur=reservation.utilisateur,
+        statut="retard"
+    ).exists()
+
+    nb_reservations = Reservation.objects.filter(
+        utilisateur=reservation.utilisateur,
+        statut=ReservationStatus.EN_ATTENTE
+    ).exclude(id=reservation.id).count()
+
+    doublon = Reservation.objects.filter(
+        utilisateur=reservation.utilisateur,
+        livre=reservation.livre,
+        statut=ReservationStatus.EN_ATTENTE
+    ).exclude(id=reservation.id).exists()
+
+    image_url = reservation.livre.couverture.url if reservation.livre.couverture else "/static/img/book_placeholder.png"
+
+    data = {
+        "livre": {
+            "titre": reservation.livre.titre,
+            "image": image_url
+        },
+        "membre": {
+            "nom": reservation.utilisateur.get_full_name(),
+            "email": reservation.utilisateur.email
+        },
+        "date_reservation": reservation.date_reservation.strftime("%d/%m/%Y %H:%M"),
+        "message": reservation.message_utilisateur or "Aucun message",
+        "criteres": {
+            "retard": not a_retard,
+            "disponible": True,   
+            "doublon": not doublon,
+            "limite": nb_reservations < 3,
+            "type": reservation.get_type_reservation_display()
+        }
+    }
+
+    return JsonResponse(data)
+
+
+@login_required
+def telecharger_pdf_reservation(request , id):
+    reservation = get_object_or_404(Reservation , id = id)
+    
+    pdf_buffer = generer_pdf_qr(reservation)
+    response = HttpResponse(pdf_buffer.getvalue() , content_type = 'application/pdf')
+    
+    response['Content-Disposition'] = (f'attachment; filename="reservation_{reservation.id}.pdf"' )
+    
+    return response

@@ -15,7 +15,7 @@ class ReservationStatus(models.TextChoices):
     CONFIRMEE = 'confirmee' , "CONFIRMEE"
     ANNULEE = 'annulee' , "ANNULEE"
     EXPIREE = 'expiree' , "EXPIREE"
-    TRANSFORMEE = 'trasforme_en_emprunt', "Tranformee en emprunt"
+    TRANSFORMEE = 'transforme_en_emprunt', "Tranformee en emprunt"
 
 
 def default_date_expiration():
@@ -29,7 +29,7 @@ class Reservation(models.Model):
     date_reservation = models.DateTimeField(auto_now_add=True)
     date_expiration = models.DateField(default=default_date_expiration)    
     qr_code = models.ImageField(upload_to='qr_codes/', blank=True , null=True)
-    statut = models.CharField(max_length= 20 , choices= ReservationStatus.choices , default= ReservationStatus.EN_ATTENTE)
+    statut = models.CharField(max_length= 50 , choices= ReservationStatus.choices , default= ReservationStatus.EN_ATTENTE)
     type_reservation = models.CharField(max_length= 30 , choices=[('physique' , 'Physique') , ('en_ligne' , 'En_ligne')] , default='physique')    
     message_utilisateur = models.TextField(blank=True , null= True)
     date_confirmation = models.DateField(blank=True , null= True)

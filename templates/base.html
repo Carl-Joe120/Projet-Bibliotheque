@@ -173,13 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    
-    
-    const dropdowns = document.querySelectorAll('.dropdown-toggle');
-    dropdowns.forEach(el => new bootstrap.Dropdown(el));
-
-
-    
+  
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async function(e) {

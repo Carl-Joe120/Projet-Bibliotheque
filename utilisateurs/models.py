@@ -40,6 +40,9 @@ class Utilisateur(AbstractUser):
         if self.username and self.role:
             return f"{self.username} ({self.role})"
         return f"{self.username} ({self.role})"
+    
+    def nom_complet(self):
+         return f"{self.first_name}  {self.last_name}"       
  
  
     

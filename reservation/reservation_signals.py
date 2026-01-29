@@ -1,36 +1,54 @@
-from django.db.models.signals import post_save , pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Reservation , ReservationStatus
-from datetime import date
 import qrcode
-from io import BytesIO
-from django.core.files import File
+from django.utils import timezone
+from django.conf import settings
+from .utils import generer_pdf_qr
+from notifications.models import Notifications , NotificationsType
+from django.core.mail import EmailMessage
+from django.urls import reverse
 
 
-@receiver(post_save , sender= Reservation)
-def generer_code_qr_reservation(sender , instance , created , **kwargs):
-    if instance.type_reservation == 'en_ligne':
-        return
+@receiver(post_save , sender = Reservation)
+def confirmation_reservation_automatique(sender , instance , **kwargs):
     
-    if instance.statut != ReservationStatus.CONFIRMEE:
-        return
-    
-    if instance.qr_code:
-        return
-    
-    qr_data = (
-        f"Reservation ID: {instance.id}\n"
-        f"Utilisateur : {instance.utilisateur}\n"
-        f"Livre : {instance.livre.titre}\n"
-        f"Date confirmation : {instance.date_confirmation}\n"
-        f"Statut : {instance.statut}\n"
-    )
-    
-    qr_image = qrcode.make(qr_data)
-    buffer = BytesIO()
-    qr_image.save(buffer , format='PNG')
-    buffer.seek(0)
-    
-    filename = f"reservation_{instance.id}.png"
-    instance.qr_code.save(filename , File(buffer) , save=False)
-    
+    if instance.statut == ReservationStatus.EN_ATTENTE:
+        
+        instance.statut = ReservationStatus.CONFIRMEE
+        instance.date_confirmation = timezone.now()
+        instance.save(update_fields=["date_confirmation"])
+        
+        pdf_buffer = generer_pdf_qr(instance)
+        
+        
+        Notifications.objects.create(utilisateur = instance.utilisateur, 
+                                     titre = "Réservation confirmée" , message = f"Votre réservation du livre << {instance.livre.titre} >> est confirmée." , 
+                                     link = reverse("detail_reservation" , kwargs={"id" : instance.id}), 
+                                     type_notifications = NotificationsType.DISPONIBILITE )
+        
+        email = EmailMessage(
+            subject="Réservation confirmée - QR Code",
+            body=(
+                f"Bonjour {instance.utilisateur.nom_complet()},\n\n"
+                f"Votre réservation du livre << {instance.livre.titre} >> est confirmée.\n"
+                "Veuillez présenter le QR code ci-joint lors du retrait.\n\n"
+                "Merci"
+                
+            ),
+            
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[instance.utilisateur.email]
+        )
+        
+        email.attach(
+            f"reservation_{instance.id}.pdf",
+            pdf_buffer.getvalue(),
+            "application/pdf"
+        )
+        
+        email.send(fail_silently=True)
+        
+        
+        
+        

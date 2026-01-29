@@ -1,4 +1,4 @@
-from django.shortcuts import render , redirect
+from django.shortcuts import render , redirect , get_object_or_404
 from django.contrib.auth import authenticate , login , logout
 from django.contrib import messages
 from . import forms
@@ -6,7 +6,7 @@ from .models import Role , Utilisateur , UserSession
 from django.contrib.auth.decorators import login_required , user_passes_test
 from django.http import HttpRequest
 from livres.models import Livre , Emprunt
-from reservation.models import Reservation
+from reservation.models import Reservation , ReservationStatus
 from django.db.models import Count 
 from django.utils.timezone import now
 from django.db.models.functions import TruncMonth
@@ -31,6 +31,7 @@ def loginview(request):
             if utilisateur is not None:                
                     login(request , utilisateur)
                     
+                    '''
                     UserSession.objects.create(
                         user = utilisateur,
                         cle_session = request.session.session_key,
@@ -38,6 +39,9 @@ def loginview(request):
                         user_agent = request.META.get('HTTP_USER_AGENT' , 'Inconnu'),
                         date_creation = now()
                         )                       
+                       
+                       '''
+                       
                                       
                     if utilisateur.role == Role.Membre:
                         return redirect('redirect_to_membre')
@@ -126,7 +130,7 @@ def redirect_to_membre(request: HttpRequest):
         'pret_par_mois' : list(pret_par_mois),
         'categories_les_plus_lues' : list(categories_les_plus_lues),
         'user': current_user,
-        'recommended_books' : []
+        'recommended_books' : []  
     }   
         
     return render(request , 'utilisateurs/membres.html' , context)
@@ -137,7 +141,23 @@ def is_secretaire(user):
 @login_required
 @user_passes_test(is_secretaire , login_url='/')
 def redirect_to_secretaire(request: HttpRequest):
-    return render(request , 'utilisateurs/secretaire.html')
+    
+    total_reservations = Reservation.objects.filter(statut = ReservationStatus.EN_ATTENTE).count()
+    reservations_en_attente = Reservation.objects.filter(statut = 'en_attente').count()
+    emprunts_en_cours = Emprunt.objects.filter(date_retour_effectif__isnull = True).count()
+    retards = Emprunt.objects.filter(date_retour_effectif__isnull = True , date_retour_prevu__lt = date.today()).count()
+    total_membres = Utilisateur.objects.filter(is_active = True , role = Role.Membre).count()
+    
+    
+    context = {
+        'total_reservations': total_reservations,
+        'reservations_en_attente': reservations_en_attente,
+        'emprunts_en_cours': emprunts_en_cours,
+        'retards': retards,
+        'total_membres': total_membres,
+        'date': now()
+        }
+    return render(request , 'utilisateurs/secretaire.html' , context)
 
 def index(request):
     return render(request , 'utilisateurs/index.html')
@@ -179,13 +199,8 @@ def edit_profil(request):
 def log_out(request : HttpRequest):
     logout(request)
     messages.success(request , "Vous avez déconnecté avec succès")
-    return redirect('loginview')
-    
-'''
-def dashboard_membre(request : HttpRequest):
-    
-    return render(request , 'utilisateurs/membres.html' , context)
-''' 
+    return redirect('loginview')  
+
     
 @login_required
 def securite_compte(request):
@@ -253,11 +268,36 @@ def logout_one_session(request ):
     
 @login_required
 def gestion_membres(request: HttpRequest):
+    if request.user.role != Role.Secretaire:
+        messages.error(request , "Vous n'êtes pas autorisé à accéder à cette page")
+    
+    membres = Utilisateur.objects.filter(role = Role.Membre)
+    
+    context = {
+        'membres' : membres,
+        'total_membres' : membres.count(),
+        'membres_actifs' : membres.filter(is_active = True).count(), 
+        'membres_inactifs' : membres.filter(is_active = False).count()
+    }
+    
     return render(request , 'utilisateurs/gestion_membres.html')
+
+
+@login_required
+def toggle_status_membre(request , id):
+    if request.user. role != Role.Secretaire:
+        messages.error(request , "Vous n'êtes pas autorisés à acceder à cette page")
+        return redirect('gestion_membres')
+    
+    membres = get_object_or_404(Utilisateur , id = id , role = Role.Membre)
+    membres.is_active = not membres.is_active
+    membres.save()
+    return redirect('gestion_membres')
+
 
 @login_required
 def profil_secretaire(request: HttpRequest):
-    return render (request , 'utilisateurs/profil_secreatire.html')
+    return render (request , 'utilisateurs/profil_secretaire.html')
 
 
 

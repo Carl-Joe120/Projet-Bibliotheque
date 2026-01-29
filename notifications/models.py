@@ -7,8 +7,10 @@ from datetime import datetime
 
 class NotificationsType(models.TextChoices):
     RETARD = 'retard' , "RETARD DE RETOUR"
-    DISPONIBILITE = 'disponibilite' , "LIVRE DISPONIBLE"
-    NOUVEAUTE = 'nouveaute' , "UN NOUVEAU LIVRE AJOUTÉ"
+    DISPONIBILITE = 'disponibilite' , "LIVRE DISPONIBLE"    
+    RESERVATION = 'reservation', "STATUT DE RÉSERVATION"
+    VALIDATION = 'validation' , "VALIDATION RESERVATION"
+    ANNULATION = 'annulation' , "ANNULATION RESERVATION"
 
 
 
@@ -21,5 +23,8 @@ class Notifications(models.Model):
     date_envoi = models.DateTimeField(default=datetime.now)
     type_notifications = models.CharField(max_length= 25 ,choices= NotificationsType.choices , default=NotificationsType.DISPONIBILITE)
 
+    class Meta:
+        ordering = ['-date_envoi']
+
     def __str__(self):
-        return f"{self.titre} - {'lu'if self.lu else 'non lu '}"
+        return f"{self.titre} - {'lu' if self.lu else 'non lu'}"

@@ -5490,6 +5490,15 @@ textarea.form-control-lg {
   word-wrap: break-word;
 }
 
+.toast-container-center {
+    pointer-events: none;
+}
+
+.toast-center {
+    pointer-events: auto;
+}
+
+
 .modal {
   position: fixed;
   top: 0;
@@ -11809,4 +11818,40 @@ a:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 22px rgba(0 , 0 , 0 , 0.15);
 }
+<!--Notification Dropdown Styles-->
 
+
+
+#notif-dropdown .dropdown-item {
+    white-space: normal;
+    padding: 10px 15px;
+}
+
+
+
+#notif-dropdown .notif-title {
+    font-size: 0.85rem;
+}
+
+#notif-dropdown .notif-message {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+#notif-dropdown .notif-unread {
+    font-weight: 600;
+}
+
+#notif-badge {
+    font-size: 0.7rem;
+}
+
+#notif-dropdown {
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#notif-dropdown .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
