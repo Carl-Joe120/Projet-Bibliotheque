@@ -11,6 +11,8 @@ urlpatterns = [
     path('liste_reservations/' , views.liste_reservations , name='liste_reservations'),
     path('reservations/ajax/<int:reservation_id>/', views.reservation_detail_ajax, name="reservation_detail_ajax"),
     path("detail_reservation/<int:id>/", views.detail_reservation , name='detail_reservation'),
-    path("telecharger_recu/<int:id>/" , views.telecharger_pdf_reservation , name = 'telecharger_recu')
+    path('reservation/<int:id>/recu/', views.telecharger_recu, name='telecharger_recu'),
+    path("r/<uuid:token>/", views.redirect_scan, name="redirect_scan"),
+    path("scan/<uuid:token>/" , views.scan_qr , name= 'scan_qr')
     
 ]

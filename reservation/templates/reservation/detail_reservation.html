@@ -1,74 +1,367 @@
 {% extends "base.html" %}
-{% load static %}
-
 {% block content %}
-<div class="container-fluid px-4">
 
-    <!-- Titre -->
-    <h1 class="mt-4">Détails de la réservation</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item">
-            <a href="{% url 'mes_reservations' %}">Mes réservations</a>
-        </li>
-        <li class="breadcrumb-item active">Détails</li>
-    </ol>
+<style>
+  .reservation-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 0;
+    border-radius: 0;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    position: fixed !important;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    z-index: 1050;
+  }
 
-    <!-- Carte -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <i class="fas fa-book me-1"></i>
-            Réservation confirmée
-        </div>
+  .reservation-page-body {
+    padding-top: 180px;
+  }
 
-        <div class="card-body">
+  .reservation-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <p><strong>Livre :</strong> {{ reservation.livre.titre }}</p>
-                    <p><strong>Auteur :</strong> {{ reservation.livre.auteur }}</p>
-                    <p><strong>Type :</strong> {{ reservation.type_reservation|capfirst }}</p>
-                </div>
+  .reservation-header p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    margin: 0;
+  }
 
-                <div class="col-md-6">
-                    <p><strong>Membre :</strong> {{ reservation.utilisateur.get_full_name }}</p>
-                    <p><strong>Date réservation :</strong> {{ reservation.date_reservation|date:"d/m/Y H:i" }}</p>
-                    <p>
-                        <strong>Statut :</strong>
-                        <span class="badge bg-success">
-                            {{ reservation.get_statut_display }}
-                        </span>
-                    </p>
-                </div>
-            </div>
+  .info-card {
+    background: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
 
-            {% if reservation.message_utilisateur %}
-            <div class="alert alert-info">
-                <strong>Message envoyé :</strong><br>
-                {{ reservation.message_utilisateur }}
-            </div>
-            {% endif %}
+  .info-card:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
 
-            <hr>
+  .info-card .card-body {
+    padding: 35px;
+  }
 
-            <!-- Actions -->
-            <div class="d-flex justify-content-between align-items-center">
+  .info-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 0;
+  }
 
-               <!----> <a href="{% url 'telecharger_recu' reservation.id %}"
-                   class="btn btn-primary mt-3">
-                    <i class="fas fa-download"></i>
-                    Télécharger le reçu (PDF / QR Code)
-                </a>
+  .info-item {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
 
-                <a href="{% url 'mes_reservations' %}"
-                   class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>
-                    Retour
-                </a>
+  .info-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 
-            </div>
+  .info-label {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
 
-        </div>
-    </div>
+  .info-label i {
+    margin-right: 8px;
+    font-size: 1rem;
+  }
 
+  .info-value {
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .book-title {
+    font-size: 1.3rem;
+    color: #764ba2;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .book-author {
+    font-size: 1rem;
+    color: #999;
+    font-style: italic;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+  }
+
+  .status-badge.pending {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    color: white;
+  }
+
+  .status-badge.confirmed {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+  }
+
+  .status-badge.cancelled {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+  }
+
+  .status-badge i {
+    margin-right: 6px;
+  }
+
+  .user-message-box {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-left: 4px solid #667eea;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+
+  .user-message-label {
+    display: flex;
+    align-items: center;
+    color: #667eea;
+    font-weight: 700;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .user-message-label i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+  }
+
+  .user-message-text {
+    color: #555;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  .btn-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .btn-primary-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-primary-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-primary-modern:active {
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary-modern {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+  }
+
+  .btn-secondary-modern:hover {
+    background: #f5f7ff;
+    transform: translateY(-3px);
+    color: #764ba2;
+    border-color: #764ba2;
+    text-decoration: none;
+  }
+
+  .btn-disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .btn-disabled:hover {
+    background: #e0e0e0;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-icon {
+    font-size: 1.2rem;
+  }
+
+  @media (max-width: 768px) {
+    .reservation-header {
+      padding: 30px 0;
+    }
+
+    .reservation-page-body {
+      padding-top: 210px;
+    }
+
+    .reservation-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .info-card .card-body {
+      padding: 20px;
+    }
+
+    .info-group {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+      margin-top: 30px;
+    }
+
+    .btn-modern {
+      width: 100%;
+    }
+  }
+</style>
+
+<div class="reservation-header">
+  <div class="container">
+    <h1><i class="fas fa-bookmark"></i> Réservation #{{ reservation.id }}</h1>
+    <p><i class="fas fa-calendar-alt"></i> Créée le {{ reservation.date_reservation|date:"d M Y à H:i" }}</p>
+  </div>
 </div>
+
+<div class="container reservation-page-body" style="margin-bottom: 60px;">
+  <!-- Carte principale d'information -->
+  <div class="info-card">
+    <div class="card-body">
+      <!-- Titre et Auteur du Livre -->
+      <div class="info-item" style="border-bottom: 2px solid #f0f0f0; padding-bottom: 30px;">
+        <div class="info-label">
+          <i class="fas fa-book"></i> Livre réservé
+        </div>
+        <div class="book-title">{{ reservation.livre.titre }}</div>
+        <div class="book-author">de {{ reservation.livre.auteur }}</div>
+      </div>
+
+      <!-- Grille d'informations -->
+      <div class="info-group" style="margin-top: 30px;">
+        <!-- Statut -->
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-info-circle"></i> Statut
+          </div>
+          <div class="info-value">
+            {% if reservation.statut == 'en_attente' %}
+              <span class="status-badge pending">
+                <i class="fas fa-clock"></i> En attente
+              </span>
+            {% elif reservation.statut == 'confirmee' %}
+              <span class="status-badge confirmed">
+                <i class="fas fa-check-circle"></i> Confirmée
+              </span>
+            {% elif reservation.statut == 'annulee' %}
+              <span class="status-badge cancelled">
+                <i class="fas fa-times-circle"></i> Annulée
+              </span>
+            {% else %}
+              <span class="status-badge" style="background: #95a5a6; color: white;">
+                <i class="fas fa-question-circle"></i> Inconnu
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Date de réservation -->
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-history"></i> Date de réservation
+          </div>
+          <div class="info-value">
+            {{ reservation.date_reservation|date:"d/m/Y \à H:i" }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Message utilisateur si existe -->
+      {% if reservation.message_utilisateur %}
+        <div class="user-message-box">
+          <div class="user-message-label">
+            <i class="fas fa-comment-dots"></i> Votre message
+          </div>
+          <div class="user-message-text">
+            {{ reservation.message_utilisateur }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Boutons d'action -->
+  <div class="action-buttons">
+    {% if reservation.statut != 'annulee' %}
+      <a href="{% url 'telecharger_recu' reservation.id %}" class="btn-modern btn-primary-modern">
+        <i class="fas fa-download btn-icon"></i>
+        <span>Télécharger mon reçu (QR Code)</span>
+      </a>
+    {% else %}
+      <button class="btn-modern btn-disabled">
+        <i class="fas fa-download btn-icon"></i>
+        <span>Reçu indisponible (Réservation annulée)</span>
+      </button>
+    {% endif %}
+
+    <a href="{% url 'mes_reservations' %}" class="btn-modern btn-secondary-modern">
+      <i class="fas fa-arrow-left btn-icon"></i>
+      <span>Retour à mes réservations</span>
+    </a>
+  </div>
+</div>
+
 {% endblock %}

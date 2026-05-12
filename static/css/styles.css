@@ -4071,7 +4071,11 @@ textarea.form-control-lg {
   font-size: 1.25rem;
   text-decoration: none;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
+
+
 .navbar-nav {
   display: flex;
   flex-direction: column;
@@ -4451,6 +4455,12 @@ textarea.form-control-lg {
   flex-grow: 0;
   padding: 0;
   overflow-y: visible;
+}
+
+.navbar-logo {
+    height: 50px;
+    width: auto;
+    display: block;
 }
 
 .navbar-light .navbar-brand {
@@ -4919,6 +4929,8 @@ textarea.form-control-lg {
   position: relative;
   top: -1px;
 }
+
+
 
 .alert {
   position: relative;
@@ -11547,6 +11559,35 @@ body {
   background-color: #e9ecef;
 }
 
+.sb-sidenav-blue {
+  background-color: #1565c0;
+  color: rgba(255, 255, 255, 0.5);
+}
+.sb-sidenav-blue .sb-sidenav-menu .sb-sidenav-menu-heading {
+  color: rgba(255, 255, 255, 0.25);
+}
+.sb-sidenav-blue .sb-sidenav-menu .nav-link {
+  color: rgba(255, 255, 255, 0.5);
+}
+.sb-sidenav-blue .sb-sidenav-menu .nav-link .sb-nav-link-icon {
+  color: rgba(255, 255, 255, 0.25);
+}
+.sb-sidenav-blue .sb-sidenav-menu .nav-link .sb-sidenav-collapse-arrow {
+  color: rgba(255, 255, 255, 0.25);
+}
+.sb-sidenav-blue .sb-sidenav-menu .nav-link:hover {
+  color: #fff;
+}
+.sb-sidenav-blue .sb-sidenav-menu .nav-link.active {
+  color: #fff;
+}
+.sb-sidenav-blue .sb-sidenav-menu .nav-link.active .sb-nav-link-icon {
+  color: #fff;
+}
+.sb-sidenav-blue .sb-sidenav-footer {
+  background-color: #0d47a1;
+}
+
 .dataTable-wrapper .dataTable-container {
   font-size: 0.875rem;
 }
@@ -11855,3 +11896,48 @@ a:hover {
 #notif-dropdown .dropdown-item:hover {
     background-color: #f8f9fa;
 }
+
+/*Scan Qr par secretaire*/
+
+/* Namespace strict */
+.qr-scan-page {
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* Statut */
+.qr-status {
+    font-size: 0.95rem;
+}
+
+/* Cards */
+.qr-card .card-header {
+    background-color: #f8f9fc;
+    font-size: 0.9rem;
+}
+
+/* Livre */
+.qr-book img {
+    width: 70px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e3e6f0;
+}
+
+/* Actions */
+.qr-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid #e3e6f0;
+}
+
+/* Mobile-first */
+@media (max-width: 576px) {
+    .qr-book {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+

@@ -1,0 +1,611 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard Administrateur{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ===== ADMIN DASHBOARD MODERN STYLING ===== */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #eb3b5a 0%, #fc5a8d 100%);
+        --neutral-bg: #f7fafc;
+    }
+
+    html, body {
+        background-color: var(--neutral-bg);
+    }
+
+    .dashboard-wrapper {
+        min-height: 100vh;
+        background: linear-gradient(180deg, var(--neutral-bg) 0%, #ffffff 100%);
+        padding: 2.5rem 1.5rem;
+    }
+
+    /* HEADER SECTION */
+    .dashboard-header {
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+    }
+
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+        color: white;
+        font-size: 1rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    /* KPI CARDS */
+    .kpi-card {
+        position: relative;
+        border: none;
+        border-radius: 20px;
+        padding: 2rem;
+        overflow: hidden;
+        height: 100%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 0;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .kpi-card:hover::before {
+        opacity: 1;
+    }
+
+    .kpi-card-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .kpi-info {
+        flex: 1;
+    }
+
+    .kpi-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        opacity: 0.95;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+    }
+
+    .kpi-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+
+    .kpi-icon {
+        font-size: 3.5rem;
+        opacity: 0.25;
+        transition: opacity 0.3s ease;
+    }
+
+    .kpi-card:hover .kpi-icon {
+        opacity: 0.35;
+    }
+
+    .kpi-books { background: var(--primary-gradient); }
+    .kpi-users { background: var(--success-gradient); }
+    .kpi-borrows { background: var(--secondary-gradient); }
+    .kpi-delays { background: var(--danger-gradient); }
+
+    /* SECTION TITLES */
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 5px;
+        height: 28px;
+        background: var(--primary-gradient);
+        border-radius: 3px;
+    }
+
+    .section-title i {
+        color: #667eea;
+        font-size: 1.4rem;
+    }
+
+    /* CHART CARDS */
+    .chart-card {
+        background: white;
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .chart-card:hover {
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .chart-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+    }
+
+    .chart-header i {
+        font-size: 1.2rem;
+        color: white;
+    }
+
+    .chart-body {
+        padding: 2rem;
+        position: relative;
+    }
+
+    /* TABLE CARD */
+    .table-card {
+        background: white;
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .table-card:hover {
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .table-card .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-bottom: 2px solid #e9ecef;
+        padding: 1.5rem 2rem;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+    }
+
+    .table-card .card-header i {
+        color: white;
+        margin-right: 0.75rem;
+    }
+
+    /* TABLE STYLING */
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .modern-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .modern-table thead th {
+        color: white;
+        font-weight: 700;
+        padding: 1.25rem 1.5rem;
+        text-align: left;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: none;
+    }
+
+    .modern-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+    .modern-table tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.04);
+    }
+
+    .modern-table tbody td {
+        padding: 1.25rem 1.5rem;
+        color: #495057;
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+
+    .modern-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    /* ANIMATIONS */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .kpi-card, .chart-card, .table-card {
+        animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .kpi-card { animation-delay: 0.05s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .dashboard-title {
+            font-size: 1.8rem;
+        }
+        
+        .kpi-value {
+            font-size: 2rem;
+        }
+
+        .chart-body {
+            padding: 1.5rem;
+        }
+    }
+
+    /* UTILITY CLASSES */
+    .chart-container {
+        position: relative;
+        height: auto;
+    }
+
+    canvas {
+        max-height: 350px !important;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="container-fluid">
+        
+        <!-- HEADER -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-crown me-2" style="font-size: 2.2rem; margin-right: 0.5rem;"></i>
+                Super Administrateur
+            </h1>
+            <p class="dashboard-subtitle">
+                <i class="fas fa-chart-line me-2"></i>
+                Vue d'ensemble complète du système - Tableau de bord en temps réel
+            </p>
+        </div>
+
+        <!-- KPI METRICS -->
+        <div class="row g-4 mb-5">
+
+            <div class="col-xl-3 col-md-6" style="animation-delay: 0.05s;">
+                <div class="kpi-card kpi-books">
+                    <div class="kpi-card-content">
+                        <div class="kpi-info">
+                            <div class="kpi-label">Total Livres</div>
+                            <div class="kpi-value">{{ total_livres }}</div>
+                        </div>
+                        <i class="fas fa-book kpi-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6" style="animation-delay: 0.1s;">
+                <div class="kpi-card kpi-users">
+                    <div class="kpi-card-content">
+                        <div class="kpi-info">
+                            <div class="kpi-label">Total Membres</div>
+                            <div class="kpi-value">{{ total_membres }}</div>
+                        </div>
+                        <i class="fas fa-users kpi-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6" style="animation-delay: 0.15s;">
+                <div class="kpi-card kpi-borrows">
+                    <div class="kpi-card-content">
+                        <div class="kpi-info">
+                            <div class="kpi-label">Emprunts Actifs</div>
+                            <div class="kpi-value">{{ emprunts_actifs }}</div>
+                        </div>
+                        <i class="fas fa-book-reader kpi-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6" style="animation-delay: 0.2s;">
+                <div class="kpi-card kpi-delays">
+                    <div class="kpi-card-content">
+                        <div class="kpi-info">
+                            <div class="kpi-label">Retards</div>
+                            <div class="kpi-value">{{ retards }}</div>
+                        </div>
+                        <i class="fas fa-exclamation-circle kpi-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div class="mb-4">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i> Analytiques & Statistiques
+            </h2>
+        </div>
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-xl-8">
+                <div class="chart-card" style="animation-delay: 0.25s;">
+                    <div class="chart-header">
+                        <i class="fas fa-chart-line"></i>
+                        Activité Globale - Tendances Mensuelles
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="adminLineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="chart-card" style="animation-delay: 0.3s;">
+                    <div class="chart-header">
+                        <i class="fas fa-pie-chart"></i>
+                        Répartition des Utilisateurs
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="adminPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RECENT USERS TABLE -->
+        <div class="mb-4">
+            <h2 class="section-title">
+                <i class="fas fa-users-cog"></i> Derniers Utilisateurs Inscrits
+            </h2>
+        </div>
+
+        <div class="table-card" style="animation-delay: 0.35s;">
+            <div class="card-header">
+                <i class="fas fa-user-shield"></i>
+                Gestion des utilisateurs
+            </div>
+
+            <div class="card-body p-0">
+                <div style="overflow-x: auto;">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user me-2"></i>Nom d'utilisateur</th>
+                                <th><i class="fas fa-envelope me-2"></i>Email</th>
+                                <th><i class="fas fa-badge me-2"></i>Rôle</th>
+                                <th><i class="fas fa-calendar-alt me-2"></i>Date d'inscription</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in derniers_utilisateurs %}
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.75rem;">
+                                            {{ u.username|first|upper }}
+                                        </div>
+                                        <span style="font-weight: 600;">{{ u.username }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ u.email }}</td>
+                                <td>
+                                    <span style="display: inline-block; padding: 0.35rem 0.75rem; border-radius: 20px; background: rgba(102, 126, 234, 0.1); color: #667eea; font-weight: 600; font-size: 0.8rem;">
+                                        {{ u.role }}
+                                    </span>
+                                </td>
+                                <td>{{ u.date_joined|date:"d M Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: #8896ab;">
+                                    <i class="fas fa-inbox me-2"></i> Aucun utilisateur récent
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ===================== CHART.JS CONFIGURATION ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+    // Set Chart.js defaults for modern look
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+    Chart.defaults.font.weight = 500;
+    Chart.defaults.color = '#8896ab';
+    Chart.defaults.borderColor = '#e9ecef';
+
+    // LINE CHART - ACTIVITE GLOBALE
+    const dataActivite = {{ activite|safe }};
+    const labels = dataActivite.map(i => i.month);
+    const values = dataActivite.map(i => i.count);
+
+    const lineCtx = document.getElementById('adminLineChart').getContext('2d');
+    const lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Activité Système',
+                data: values,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 3,
+                pointHoverRadius: 7,
+                pointHoverBackgroundColor: '#764ba2',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2,
+                shadowBlur: 4,
+                shadowColor: 'rgba(102, 126, 234, 0.2)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#212529',
+                        boxWidth: 15,
+                        padding: 20,
+                        font: { size: 12, weight: 'bold' }
+                    }
+                },
+                filler: {
+                    propagate: true
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#8896ab',
+                        font: { weight: 500 }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#8896ab',
+                        font: { weight: 500 }
+                    }
+                }
+            }
+        }
+    });
+
+    // DOUGHNUT CHART - REPARTITION UTILISATEURS
+    const usersData = {{ users_roles|safe }};
+    const pieCtx = document.getElementById('adminPieChart').getContext('2d');
+    const pieChart = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Administrateurs', 'Secrétaires', 'Membres'],
+            datasets: [{
+                data: usersData,
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.8)',   // Primary Purple
+                    'rgba(240, 147, 251, 0.8)',   // Pink
+                    'rgba(79, 172, 254, 0.8)'     // Cyan
+                ],
+                borderColor: [
+                    '#667eea',
+                    '#f093fb',
+                    '#4facfe'
+                ],
+                borderWidth: 3,
+                hoverBorderWidth: 4,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#212529',
+                        boxWidth: 15,
+                        padding: 15,
+                        font: { size: 12, weight: 'bold' }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

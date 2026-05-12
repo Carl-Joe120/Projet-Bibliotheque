@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Journal des Activités{% endblock %}
+
+{% block content %}
+<style>
+/* ── BADGES PAR TYPE D'ACTION ── */
+.badge-LOGIN      { background:#d1fae5; color:#065f46; }
+.badge-LOGOUT     { background:#f3f4f6; color:#374151; }
+.badge-CREATE     { background:#dbeafe; color:#1e40af; }
+.badge-UPDATE     { background:#fef3c7; color:#92400e; }
+.badge-DELETE     { background:#fee2e2; color:#991b1b; }
+.badge-EMPRUNT    { background:#ede9fe; color:#5b21b6; }
+.badge-RETOUR     { background:#d1fae5; color:#065f46; }
+.badge-RESERVATION{ background:#cffafe; color:#164e63; }
+.badge-ANNULATION { background:#fce7f3; color:#9d174d; }
+.badge-AUTRE      { background:#f9fafb; color:#6b7280; }
+
+.action-badge {
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+/* ── ROLE BADGE ── */
+.role-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.role-membre      { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+.role-secretaire  { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+.role-administrateur,
+.role-super-administrateur { background:#faf5ff; color:#7c3aed; border:1px solid #ddd6fe; }
+
+/* ── TABLE ── */
+.log-table thead th {
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+}
+.log-table tbody td {
+    padding: 0.9rem 1.25rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+}
+.log-table tbody tr:hover { background: #f8fafc; }
+
+/* ── AVATAR ── */
+.user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: white;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+.avatar-membre       { background: linear-gradient(135deg,#10b981,#059669); }
+.avatar-secretaire   { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+.avatar-administrateur,
+.avatar-super-administrateur { background: linear-gradient(135deg,#8b5cf6,#7c3aed); }
+
+/* ── STAT CARDS ── */
+.stat-mini {
+    background: white;
+    border-radius: 10px;
+    padding: 1.1rem 1.5rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: box-shadow 0.2s;
+}
+.stat-mini:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.stat-mini-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center;
+    justify-content: center;
+    font-size: 1.1rem; color: white;
+}
+.stat-mini-val { font-size: 1.6rem; font-weight: 800; color: #1a202c; line-height: 1; }
+.stat-mini-lbl { font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-top: 0.2rem; }
+
+/* ── FILTER CARD ── */
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.filter-card .form-select,
+.filter-card .form-control {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    transition: border-color 0.2s;
+}
+.filter-card .form-select:focus,
+.filter-card .form-control:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+    outline: none;
+}
+</style>
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- TITRE -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div style="width:48px;height:48px;border-radius:12px;
+                    background:linear-gradient(135deg,#8b5cf6,#7c3aed);
+                    display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-history text-white fs-5"></i>
+        </div>
+        <div>
+            <h1 class="fw-bold mb-0" style="font-size:1.8rem;">Journal des activités</h1>
+            <p class="text-muted mb-0 small">Suivez en temps réel toutes les activités du système</p>
+        </div>
+    </div>
+
+    <!-- STAT MINI CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <div>
+                    <div class="stat-mini-val">{{ stats.total_connexions }}</div>
+                    <div class="stat-mini-lbl">Connexions</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div>
+                    <div class="stat-mini-val">{{ stats.total_emprunts }}</div>
+                    <div class="stat-mini-lbl">Emprunts</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+                <div>
+                    <div class="stat-mini-val">{{ stats.total_reservations }}</div>
+                    <div class="stat-mini-lbl">Réservations</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                    <i class="fas fa-trash"></i>
+                </div>
+                <div>
+                    <div class="stat-mini-val">{{ stats.total_suppressions }}</div>
+                    <div class="stat-mini-lbl">Suppressions</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filter-card">
+        <form method="GET" id="filterForm" class="row g-3 align-items-end">
+            <div class="col-12 col-md-2">
+                <label class="form-label fw-semibold small text-uppercase text-muted mb-1">
+                    Type d'utilisateur
+                </label>
+                <select name="role" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="membre"         {% if request.GET.role == 'membre' %}selected{% endif %}>Membres</option>
+                    <option value="secretaire"     {% if request.GET.role == 'secretaire' %}selected{% endif %}>Secrétaires</option>
+                    <option value="administrateur" {% if request.GET.role == 'administrateur' %}selected{% endif %}>Admin</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label fw-semibold small text-uppercase text-muted mb-1">
+                    Type d'action
+                </label>
+                <select name="action" class="form-select">
+                    <option value="">Toutes les actions</option>
+                    <option value="LOGIN"       {% if request.GET.action == 'LOGIN' %}selected{% endif %}>Connexion</option>
+                    <option value="LOGOUT"      {% if request.GET.action == 'LOGOUT' %}selected{% endif %}>Déconnexion</option>
+                    <option value="CREATE"      {% if request.GET.action == 'CREATE' %}selected{% endif %}>Création</option>
+                    <option value="UPDATE"      {% if request.GET.action == 'UPDATE' %}selected{% endif %}>Modification</option>
+                    <option value="DELETE"      {% if request.GET.action == 'DELETE' %}selected{% endif %}>Suppression</option>
+                    <option value="EMPRUNT"     {% if request.GET.action == 'EMPRUNT' %}selected{% endif %}>Emprunt</option>
+                    <option value="RETOUR"      {% if request.GET.action == 'RETOUR' %}selected{% endif %}>Retour</option>
+                    <option value="RESERVATION" {% if request.GET.action == 'RESERVATION' %}selected{% endif %}>Réservation</option>
+                    <option value="ANNULATION"  {% if request.GET.action == 'ANNULATION' %}selected{% endif %}>Annulation</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label fw-semibold small text-uppercase text-muted mb-1">
+                    Date début
+                </label>
+                <input type="date" name="date_start" class="form-control"
+                       value="{{ request.GET.date_start }}">
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label fw-semibold small text-uppercase text-muted mb-1">
+                    Date fin
+                </label>
+                <input type="date" name="date_end" class="form-control"
+                       value="{{ request.GET.date_end }}">
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label fw-semibold small text-uppercase text-muted mb-1">
+                    Utilisateur
+                </label>
+                <input type="text" name="user" class="form-control"
+                       placeholder="Nom d'utilisateur"
+                       value="{{ request.GET.user }}">
+            </div>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"
+                        style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);border:none;border-radius:8px;">
+                    <i class="fas fa-filter me-1"></i>Filtrer
+                </button>
+                <a href="{% url 'logs_systeme_admin' %}"
+                   class="btn btn-outline-secondary"
+                   style="border-radius:8px;" title="Réinitialiser">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- TABLEAU -->
+    <div class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+        <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center"
+             style="border-bottom:1px solid #f1f5f9;">
+            <div class="fw-bold text-dark">
+                <i class="fas fa-list me-2 text-muted"></i>
+                Historique des activités
+                <span class="badge ms-2"
+                      style="background:#f1f5f9;color:#64748b;font-size:0.78rem;border-radius:20px;">
+                    {{ page_obj.paginator.count }} entrée{{ page_obj.paginator.count|pluralize }}
+                </span>
+            </div>
+            <a href="{% url 'export_logs_csv' %}"
+               class="btn btn-sm btn-outline-success"
+               style="border-radius:8px;font-weight:600;">
+                <i class="fas fa-download me-1"></i>Export CSV
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table log-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Utilisateur</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Rôle</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in page_obj %}
+                    <tr>
+                        <!-- DATE -->
+                        <td class="text-muted" style="white-space:nowrap;font-size:0.83rem;">
+                            <i class="fas fa-clock me-1" style="color:#cbd5e0;"></i>
+                            {{ log.created_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <!-- UTILISATEUR -->
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar avatar-{{ log.user.role|default:'autre' }}">
+                                    {{ log.user.username|first|upper|default:"?" }}
+                                </div>
+                                <span class="fw-semibold">{{ log.user.username|default:"Système" }}</span>
+                            </div>
+                        </td>
+
+                        <!-- ACTION BADGE -->
+                        <td>
+                            <span class="action-badge badge-{{ log.action }}">
+                                {% if log.action == "LOGIN" %}<i class="fas fa-sign-in-alt me-1"></i>
+                                {% elif log.action == "LOGOUT" %}<i class="fas fa-sign-out-alt me-1"></i>
+                                {% elif log.action == "CREATE" %}<i class="fas fa-plus me-1"></i>
+                                {% elif log.action == "UPDATE" %}<i class="fas fa-edit me-1"></i>
+                                {% elif log.action == "DELETE" %}<i class="fas fa-trash me-1"></i>
+                                {% elif log.action == "EMPRUNT" %}<i class="fas fa-book me-1"></i>
+                                {% elif log.action == "RETOUR" %}<i class="fas fa-undo me-1"></i>
+                                {% elif log.action == "RESERVATION" %}<i class="fas fa-bookmark me-1"></i>
+                                {% elif log.action == "ANNULATION" %}<i class="fas fa-times me-1"></i>
+                                {% endif %}
+                                {{ log.get_action_display }}
+                            </span>
+                        </td>
+
+                        <!-- DESCRIPTION -->
+                        <td style="max-width:320px;font-size:0.88rem;color:#374151;">
+                            {{ log.description }}
+                        </td>
+
+                        <!-- ROLE -->
+                        <td>
+                            {% if log.user %}
+                            <span class="role-badge role-{{ log.user.role }}">
+                                {{ log.user.get_role_display|default:log.user.role|capfirst }}
+                            </span>
+                            {% else %}
+                            <span class="role-badge" style="background:#f9fafb;color:#9ca3af;">
+                                Système
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- IP -->
+                        <td class="text-muted" style="font-size:0.82rem;font-family:monospace;">
+                            {{ log.ip_address|default:"—" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fs-2 d-block mb-2" style="color:#cbd5e0;"></i>
+                            Aucune activité trouvée
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 px-4"
+             style="border-top:1px solid #f1f5f9;">
+            <small class="text-muted">
+                Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                &nbsp;·&nbsp; {{ page_obj.paginator.count }} entrée{{ page_obj.paginator.count|pluralize }}
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" style="gap:4px;">
+
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" style="border-radius:8px;" href="#"
+                           onclick="goToPage({{ page_obj.previous_page_number }}); return false;">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link"
+                                  style="border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);border:none;">
+                                {{ num }}
+                            </span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" style="border-radius:8px;" href="#"
+                               onclick="goToPage({{ num }}); return false;">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" style="border-radius:8px;" href="#"
+                           onclick="goToPage({{ page_obj.next_page_number }}); return false;">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<script>
+function goToPage(num) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', num);
+    window.location.search = params.toString();
+}
+
+
+document.getElementById("filterForm").addEventListener("submit", function(e) {
+    const start = document.querySelector("input[name='date_start']").value;
+    const end = document.querySelector("input[name='date_end']").value;
+
+    if (start && end && start > end) {
+        e.preventDefault();
+        alert("La date de debut ne peut pas être postérieure à la date de fin.");
+    }
+});
+
+
+const startInput = document.querySelector("input[name='date_start']");
+const endInput = document.querySelector("input[name='date_end']");
+
+startInput.addEventListener("change", function() {
+    if (this.value) {
+        endInput.min = this.value;
+    }
+});
+
+endInput.addEventListener("change", function() {
+    if (this.value) {
+        startInput.max = this.value;
+    }
+});
+</script>
+{% endblock %}

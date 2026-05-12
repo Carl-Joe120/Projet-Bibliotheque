@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analyse et Rapports{% endblock %}
+
+{% block content %}
+<style>
+    .rapport-header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: #ffffff;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .header-top {
+        padding: 1.5rem 1rem;
+        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+        border-radius: 1rem;
+    }
+
+    .header-content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .rapport-page {
+        padding-top: 1rem;
+    }
+</style>
+<div class="rapport-page">
+    <!-- Header -->
+    <div class="rapport-header">
+        <div class="header-top">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <h1>Analyse & Rapports</h1>
+                    <p class="header-subtitle">Tableau de bord complet des emprunts et statistiques</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-header btn-primary" onclick="window.print()">
+                    <i class="fas fa-print"></i>
+                    <span>Imprimer</span>
+                </button>
+                <button class="btn-header btn-success" onclick="exportCSV()">
+                    <i class="fas fa-download"></i>
+                    <span>Exporter CSV</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <div class="filter-title">
+            <i class="fas fa-filter"></i> Filtres de Recherche
+        </div>
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="filter-date-start">Date Début</label>
+                <input type="date" id="filter-date-start" class="form-control" value="{{ date_start }}">
+            </div>
+            <div class="form-group">
+                <label for="filter-date-end">Date Fin</label>
+                <input type="date" id="filter-date-end" class="form-control" value="{{ date_end }}">
+            </div>
+            <div class="form-group">
+                <label for="filter-statut">Statut</label>
+                <select id="filter-statut" class="form-select">
+                    <option value="">-- Tous les Statuts --</option>
+                    <option value="en_cours" {% if statut == 'en_cours' %}selected{% endif %}>En Cours</option>
+                    <option value="retourne" {% if statut == 'retourne' %}selected{% endif %}>Retourné</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="filter-categorie">Catégorie</label>
+                <select id="filter-categorie" class="form-select">
+                    <option value="">-- Toutes les Catégories --</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if categorie == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="filter-buttons">
+            <button class="btn-filter btn-apply" onclick="applyFilters()">
+                <i class="fas fa-search"></i> Appliquer
+            </button>
+            <button class="btn-filter btn-reset" onclick="resetFilters()">
+                <i class="fas fa-redo"></i> Réinitialiser
+            </button>
+        </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.total_livres }}</span>
+                <div class="stat-label">Livres en catalogue</div>
+            </div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.livres_disponibles }}</span>
+                <div class="stat-label">Livres disponibles</div>
+            </div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.emprunts_actifs }}</span>
+                <div class="stat-label">Emprunts en cours</div>
+            </div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.reservations }}</span>
+                <div class="stat-label">En réservation</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-container">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3><i class="fas fa-chart-pie"></i> Répartition par Statut</h3>
+            </div>
+            <div class="chart-placeholder">
+                <div class="chart-circle">
+                    <div class="chart-segment en-cours" style="background: linear-gradient(45deg, #ffc107, #fd7e14);"></div>
+                    <div class="chart-segment retourne" style="background: linear-gradient(45deg, #28a745, #20c997);"></div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color en-cours"></span>
+                        <span>En cours: {{ stats.emprunts_actifs }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color retourne"></span>
+                        <span>Retourné: {{ stats.livres_retournes }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3><i class="fas fa-chart-bar"></i> Activité Mensuelle</h3>
+            </div>
+            <div class="chart-placeholder">
+                <div class="bar-chart">
+                    <div class="bar" style="height: 60%; background: linear-gradient(to top, #007bff, #0056b3);">
+                        <span class="bar-value">Jan</span>
+                    </div>
+                    <div class="bar" style="height: 80%; background: linear-gradient(to top, #28a745, #1e7e34);">
+                        <span class="bar-value">Fév</span>
+                    </div>
+                    <div class="bar" style="height: 45%; background: linear-gradient(to top, #ffc107, #e0a800);">
+                        <span class="bar-value">Mar</span>
+                    </div>
+                    <div class="bar" style="height: 70%; background: linear-gradient(to top, #dc3545, #bd2130);">
+                        <span class="bar-value">Avr</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emprunts Table -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <div class="table-title">
+                <i class="fas fa-list-ul"></i>
+                <h2>Emprunts Récents</h2>
+            </div>
+            <div class="table-info">
+                <span class="result-count">{{ emprunts_recents|length }} résultat{{ emprunts_recents|length|pluralize }}</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            {% if emprunts_recents %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> ID</th>
+                        <th><i class="fas fa-book"></i> Livre</th>
+                        <th><i class="fas fa-user"></i> Emprunteur</th>
+                        <th><i class="fas fa-calendar-plus"></i> Date Emprunt</th>
+                        <th><i class="fas fa-calendar-times"></i> Retour Prévu</th>
+                        <th><i class="fas fa-info-circle"></i> Statut</th>
+                        <th><i class="fas fa-exclamation-triangle"></i> Retard</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emprunt in emprunts_recents %}
+                    <tr class="{% cycle 'row-even' 'row-odd' %}">
+                        <td><strong class="id-badge">#{{ emprunt.id }}</strong></td>
+                        <td class="book-title">{{ emprunt.livre }}</td>
+                        <td>{{ emprunt.utilisateur }}</td>
+                        <td><span class="date-badge">{{ emprunt.date_emprunt|date:"d/m/Y" }}</span></td>
+                        <td><span class="date-badge">{{ emprunt.date_retour_prevue|date:"d/m/Y" }}</span></td>
+                        <td>
+                            {% if emprunt.statut == 'en_cours' %}
+                                <span class="badge badge-en-cours">
+                                    <i class="fas fa-clock"></i> En cours
+                                </span>
+                            {% elif emprunt.statut == 'retourne' %}
+                                <span class="badge badge-retourne">
+                                    <i class="fas fa-check"></i> Retourné
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emprunt.en_retard %}
+                                <span class="badge badge-retard">
+                                    <i class="fas fa-exclamation-circle"></i> En retard
+                                </span>
+                            {% else %}
+                                <span class="status-neutral">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>Aucun emprunt trouvé</h3>
+                <p>Essayez de modifier vos filtres de recherche</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics by Category -->
+    {% if stats_categories %}
+    <div class="table-card">
+        <div class="table-card-header">
+            <h2><i class="fas fa-layer-group"></i> Statistiques par Catégorie</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Catégorie</th>
+                        <th>Total Livres</th>
+                        <th>Disponibles</th>
+                        <th>En Emprunt</th>
+                        <th>Réservations</th>
+                        <th>Taux Utilisation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in stats_categories %}
+                    <tr>
+                        <td><strong>{{ cat.nom }}</strong></td>
+                        <td>{{ cat.total_livres }}</td>
+                        <td><span class="badge-retourne">{{ cat.disponibles }}</span></td>
+                        <td><span class="badge-en-cours">{{ cat.emprunts_actifs }}</span></td>
+                        <td>{{ cat.reservations }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 100px; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: {{ cat.taux_utilisation }}%; height: 100%; background: #0d6efd; transition: all 0.3s ease;"></div>
+                                </div>
+                                <span style="font-weight: 600;">{{ cat.taux_utilisation|floatformat:1 }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+
+<script>
+   function applyFilters() {
+    const dateStart = document.getElementById('filter-date-start').value;
+    const dateEnd = document.getElementById('filter-date-end').value;
+    const statut = document.getElementById('filter-statut').value;
+    const categorie = document.getElementById('filter-categorie').value;
+
+    // 🚨 VALIDATION ENPÒTAN
+    if (dateStart && dateEnd && dateStart > dateEnd) {
+    showToast("⚠️ La date de debut ne peut pas être superieure à la date de fin  !", "warning");
+    return;
+}
+
+    const params = new URLSearchParams();
+
+    if (dateStart) params.append('date_start', dateStart);
+    if (dateEnd) params.append('date_end', dateEnd);
+    if (statut) params.append('statut', statut);
+    if (categorie) params.append('categorie', categorie);
+
+    window.location.href = '?' + params.toString();
+}
+
+    function resetFilters() {
+        document.getElementById('filter-date-start').value = '';
+        document.getElementById('filter-date-end').value = '';
+        document.getElementById('filter-statut').value = '';
+        document.getElementById('filter-categorie').value = '';
+        window.location.href = window.location.pathname;
+    }
+
+    function exportCSV() {
+        window.location.href = '{% url "export_csv_rapports" %}';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Rapport chargé avec succès');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,548 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    :root {
+        --surface: #ffffff;
+        --surface-soft: #f4f6fc;
+        --text-default: #1f2a48;
+        --text-muted: #7a8cb3;
+        --border: #e9edf8;
+        --accent: #667eea;
+        --accent-strong: #764ba2;
+    }
+
+    body {
+        background: linear-gradient(180deg, #f6f8ff 0%, #ffffff 100%);
+    }
+
+    .books-page {
+        min-height: 100vh;
+        padding: 2.5rem 1.5rem;
+        animation: fadeInUp 0.45s ease;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+
+    .page-header .title-group {
+        max-width: 720px;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1.05;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .page-description {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin-top: 0.8rem;
+    }
+
+    .page-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 1.75rem;
+        box-shadow: 0 20px 45px rgba(102, 126, 234, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 24px 50px rgba(102, 126, 234, 0.12);
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-value {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: var(--text-default);
+        line-height: 1;
+    }
+
+    .filter-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 1.75rem;
+        box-shadow: 0 18px 45px rgba(102, 126, 234, 0.05);
+        margin-bottom: 2rem;
+    }
+
+    .filter-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        color: var(--text-default);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .filter-title i {
+        color: var(--accent);
+        font-size: 1.1rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .filter-control {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-control label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-muted);
+    }
+
+    .filter-control input,
+    .filter-control select {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 0.95rem 1.1rem;
+        font-size: 0.95rem;
+        color: var(--text-default);
+        background: #ffffff;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .filter-control input:focus,
+    .filter-control select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+
+    .btn-filter,
+    .btn-reset {
+        border-radius: 14px;
+        padding: 0.95rem 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: white;
+        border: none;
+        box-shadow: 0 14px 30px rgba(102, 126, 234, 0.18);
+    }
+
+    .btn-reset {
+        background: #f6f8ff;
+        color: var(--text-default);
+        border: 1px solid var(--border);
+    }
+
+    .btn-filter:hover,
+    .btn-reset:hover {
+        transform: translateY(-2px);
+    }
+
+    .table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(102, 126, 234, 0.08);
+    }
+
+    .table-header {
+        padding: 1.75rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .table-header h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-default);
+    }
+
+    .table-header .table-badge {
+        padding: 0.55rem 1rem;
+        border-radius: 999px;
+        background: rgba(102, 126, 234, 0.12);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .modern-table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .modern-table thead th {
+        padding: 1.3rem 1.5rem;
+        text-align: left;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: #f8fbff;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .modern-table tbody tr {
+        background: white;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .modern-table tbody tr:hover {
+        background: #f5f7ff;
+        transform: translateY(-1px);
+    }
+
+    .modern-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-default);
+        vertical-align: middle;
+        font-size: 0.95rem;
+    }
+
+    .book-title {
+        font-weight: 700;
+        color: var(--text-default);
+    }
+
+    .book-meta {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.55rem 0.95rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .badge-available {
+        background: rgba(76, 175, 80, 0.12);
+        color: #2f7d32;
+    }
+
+    .badge-unavailable {
+        background: rgba(229, 57, 53, 0.12);
+        color: #c62828;
+    }
+
+    .pagination-wrapper {
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .pagination-info {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .pagination-list {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .pagination-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        color: var(--text-default);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        background: white;
+        font-weight: 600;
+    }
+
+    .pagination-link:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-1px);
+    }
+
+    .pagination-link.active {
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        border-color: transparent;
+        color: white;
+    }
+
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        color: var(--text-muted);
+    }
+
+    .empty-state h5 {
+        margin-bottom: 0.75rem;
+        color: var(--text-default);
+        font-size: 1.4rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state .btn {
+        border-radius: 14px;
+        padding: 0.95rem 1.75rem;
+    }
+
+    @media (max-width: 1200px) {
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-actions {
+            width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modern-table {
+            min-width: 100%;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="books-page">
+    <div class="container-fluid px-4">
+
+        <div class="page-header">
+            <div class="title-group">
+                <h1 class="page-title">Liste des livres</h1>
+                <p class="page-description">Consultez, filtrez et gérez rapidement l’inventaire de la bibliothèque.</p>
+            </div>
+            <div class="page-actions">
+                <a href="{% url 'gestion_livres_admin' %}" class="btn btn-reset">Réinitialiser</a>
+                <button type="submit" form="book-filter-form" class="btn btn-filter">Appliquer le filtre</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total livres</div>
+                <div class="stat-value">{{ total_livres }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Livres visibles</div>
+                <div class="stat-value">{{ page_obj.object_list|length }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Catégories actives</div>
+                <div class="stat-value">{{ categories|length }}</div>
+            </div>
+        </div>
+
+        <div class="filter-panel">
+            <div class="filter-title">
+                <i class="fas fa-filter"></i>
+                Filtres de recherche
+            </div>
+            <form id="book-filter-form" method="get" class="filter-grid">
+                <div class="filter-control">
+                    <label>Titre ou auteur</label>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par titre ou auteur">
+                </div>
+                <div class="filter-control">
+                    <label>Disponibilité</label>
+                    <select name="dispo">
+                        <option value="">Toutes</option>
+                        <option value="disponible" {% if filtre_dispo == "disponible" %}selected{% endif %}>Disponible</option>
+                        <option value="indisponible" {% if filtre_dispo == "indisponible" %}selected{% endif %}>Indisponible</option>
+                    </select>
+                </div>
+                <div class="filter-control">
+                    <label>Catégorie</label>
+                    <select name="categorie">
+                        <option value="">Toutes</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if filtre_categorie == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-control" style="align-self: end;">
+                    <button type="submit" class="btn btn-filter">Filtrer</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <h2>Inventaire des livres</h2>
+                <span class="table-badge">{{ page_obj.paginator.count }} éléments</span>
+            </div>
+
+            <div class="table-wrapper">
+                {% if page_obj.object_list %}
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Titre</th>
+                            <th>Auteur</th>
+                            <th>Catégorie</th>
+                            <th>Stock</th>
+                            <th>État</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for livre in page_obj %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="book-title">{{ livre.titre }}</div>
+                                <div class="book-meta">Réf. {{ livre.id }}</div>
+                            </td>
+                            <td>{{ livre.auteur }}</td>
+                            <td>
+                                {% if livre.categorie %}
+                                    {{ livre.categorie.nom }}
+                                {% else %}
+                                    <span class="book-meta">Non défini</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ livre.quantite }}</td>
+                            <td>
+                                {% if livre.quantite > 0 %}
+                                    <span class="badge-pill badge-available">Disponible</span>
+                                {% else %}
+                                    <span class="badge-pill badge-unavailable">Indisponible</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</div>
+                    <div class="pagination-list">
+                        {% if page_obj.has_previous %}
+                            <a class="pagination-link" href="?page=1&q={{ query }}&dispo={{ filtre_dispo }}&categorie={{ filtre_categorie }}">«</a>
+                            <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&dispo={{ filtre_dispo }}&categorie={{ filtre_categorie }}">Précédent</a>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                                {% if num == page_obj.number %}
+                                    <span class="pagination-link active">{{ num }}</span>
+                                {% else %}
+                                    <a class="pagination-link" href="?page={{ num }}&q={{ query }}&dispo={{ filtre_dispo }}&categorie={{ filtre_categorie }}">{{ num }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <a class="pagination-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&dispo={{ filtre_dispo }}&categorie={{ filtre_categorie }}">Suivant</a>
+                            <a class="pagination-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}&dispo={{ filtre_dispo }}&categorie={{ filtre_categorie }}">»</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <h5>Aucun livre trouvé</h5>
+                    <p>Essayez un autre filtre ou ajoutez de nouveaux livres pour remplir l’inventaire.</p>
+                    <a href="{% url 'gestion_livres_admin' %}" class="btn btn-filter">Voir tous les livres</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

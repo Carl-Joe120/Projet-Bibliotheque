@@ -1,0 +1,675 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --neutral-bg: #f7fafc;
+    }
+
+    body {
+        background-color: var(--neutral-bg);
+        background: linear-gradient(180deg, var(--neutral-bg) 0%, #ffffff 100%);
+    }
+
+    .members-wrapper { min-height: 100vh; padding: 2.5rem 1.5rem; }
+
+    .breadcrumb-container { margin-bottom: 2rem; }
+
+    .breadcrumb-custom {
+        background: transparent; padding: 0; margin: 0;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .breadcrumb-custom li { list-style: none; }
+
+    .breadcrumb-custom li::after {
+        content: '/'; margin-left: 0.75rem; color: #bcc1ca; font-weight: 300;
+    }
+
+    .breadcrumb-custom li:last-child::after { content: ''; }
+
+    .breadcrumb-custom a {
+        color: #667eea; text-decoration: none;
+        font-weight: 500; transition: color 0.3s ease;
+    }
+
+    .breadcrumb-custom a:hover { color: #764ba2; }
+    .breadcrumb-custom .active { color: #212529; font-weight: 600; }
+
+    .members-header {
+        display: flex; justify-content: space-between;
+        align-items: flex-start; margin-bottom: 3rem;
+        flex-wrap: wrap; gap: 1.5rem;
+    }
+
+    .header-title-section h1 {
+        font-size: 2.5rem; font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text; letter-spacing: -0.5px; margin-bottom: 0.5rem;
+    }
+
+    .header-subtitle {
+        color: #8896ab; font-size: 1rem; font-weight: 500;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .stats-card-container { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .stats-card {
+        background: white; border-radius: 15px; padding: 1.25rem 1.75rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.06); border-left: 4px solid;
+        border-image: var(--primary-gradient) 1; transition: all 0.3s ease;
+        display: flex; align-items: center; gap: 1rem; min-width: 200px;
+    }
+
+    .stats-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .stats-icon { font-size: 2rem; color: #667eea; opacity: 0.8; }
+    .stats-content { flex: 1; }
+
+    .stats-label {
+        font-size: 0.85rem; color: #8896ab;
+        text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+    }
+
+    .stats-value { font-size: 1.75rem; font-weight: 800; color: #212529; line-height: 1; }
+
+    .search-section { margin-bottom: 2.5rem; }
+
+    .search-card {
+        background: white; border-radius: 20px; padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all 0.3s ease;
+    }
+
+    .search-card:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.12); }
+
+    .search-label {
+        font-size: 0.9rem; font-weight: 700; color: #212529;
+        margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .search-label i { color: #667eea; font-size: 1.1rem; }
+
+    .search-input-group { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+    .search-input {
+        flex: 1; min-width: 250px; padding: 0.875rem 1.5rem;
+        border: 2px solid #e9ecef; border-radius: 12px;
+        font-size: 0.95rem; transition: all 0.3s ease; background: white;
+    }
+
+    .search-input:focus {
+        outline: none; border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.1); background: #fafbfd;
+    }
+
+    .search-input::placeholder { color: #bcc1ca; }
+
+    .search-btn {
+        padding: 0.875rem 2rem; background: var(--primary-gradient);
+        color: white; border: none; border-radius: 12px; font-weight: 700;
+        cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.5px;
+        display: flex; align-items: center; gap: 0.5rem;
+        text-transform: uppercase; font-size: 0.85rem;
+    }
+
+    .search-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }
+    .search-btn:active { transform: translateY(0); }
+
+    .table-card {
+        background: white; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all 0.3s ease; margin-bottom: 2rem;
+    }
+
+    .table-card:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.12); }
+
+    .table-card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.75rem 2rem; color: white; font-weight: 700;
+        font-size: 1.1rem; display: flex; align-items: center;
+        gap: 0.75rem; letter-spacing: 0.5px;
+    }
+
+    .table-card-header i { font-size: 1.3rem; opacity: 0.9; }
+    .table-card-body { padding: 0; overflow-x: auto; }
+
+    .modern-members-table { width: 100%; border-collapse: collapse; }
+
+    .modern-members-table thead {
+        background: linear-gradient(135deg, #f7fafc 0%, #e9ecef 100%);
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .modern-members-table thead th {
+        padding: 1.25rem 1.5rem; text-align: left; font-weight: 700;
+        color: #212529; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .modern-members-table thead th:first-child { width: 50px; }
+
+    .modern-members-table tbody tr {
+        border-bottom: 1px solid #e9ecef; transition: all 0.3s ease;
+    }
+
+    .modern-members-table tbody tr:hover {
+        background-color: rgba(102,126,234,0.04); border-left: 4px solid #667eea;
+    }
+
+    .modern-members-table tbody td {
+        padding: 1.25rem 1.5rem; color: #495057; font-size: 0.95rem; vertical-align: middle;
+    }
+
+    .modern-members-table tbody tr:last-child { border-bottom: none; }
+
+    .member-info { display: flex; align-items: center; gap: 0.75rem; }
+
+    .member-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: var(--primary-gradient); display: flex;
+        align-items: center; justify-content: center; color: white;
+        font-weight: 700; font-size: 0.9rem;
+        box-shadow: 0 3px 10px rgba(102,126,234,0.3);
+    }
+
+    .member-username { font-weight: 600; color: #212529; }
+    .member-email { color: #8896ab; font-size: 0.9rem; }
+    .member-date { color: #8896ab; font-size: 0.9rem; }
+
+    /* STATUT */
+    .statut-badge {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.3rem 0.75rem; border-radius: 20px;
+        font-size: 0.8rem; font-weight: 600; white-space: nowrap;
+    }
+
+    .statut-email { background: #fee2e2; color: #dc2626; }
+    .statut-attente { background: #fef3c7; color: #d97706; }
+    .statut-actif { background: #d1fae5; color: #065f46; }
+
+    .approbation-group {
+        display: flex; align-items: center; gap: 0.5rem;
+        flex-wrap: wrap; margin-top: 0.5rem;
+    }
+
+    .btn-approuver {
+        background: #28a745; color: white; border: none; border-radius: 8px;
+        padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+        cursor: pointer; transition: all 0.3s ease;
+        display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+
+    .btn-approuver:hover {
+        background: #218838; transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(40,167,69,0.3);
+    }
+
+    .btn-rejeter {
+        background: #dc3545; color: white; border: none; border-radius: 8px;
+        padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+        cursor: pointer; transition: all 0.3s ease;
+        display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+
+    .btn-rejeter:hover {
+        background: #c82333; transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+    }
+
+    /* ACTION BUTTONS */
+    .action-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    .btn-action {
+        padding: 0.5rem 0.75rem; border: none; border-radius: 8px;
+        font-size: 0.8rem; font-weight: 600; cursor: pointer;
+        transition: all 0.3s ease; display: inline-flex;
+        align-items: center; gap: 0.35rem; text-decoration: none; letter-spacing: 0.5px;
+    }
+
+    .btn-view { background: rgba(79,172,254,0.15); color: #4facfe; }
+
+    .btn-view:hover {
+        background: #4facfe; color: white; transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(79,172,254,0.4);
+    }
+
+    .btn-edit { background: rgba(102,126,234,0.15); color: #667eea; }
+
+    .btn-edit:hover {
+        background: #667eea; color: white; transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+
+    .btn-delete { background: rgba(220,53,69,0.15); color: #dc3545; }
+
+    .btn-delete:hover {
+        background: #dc3545; color: white; transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220,53,69,0.4);
+    }
+
+    .empty-state { text-align: center; padding: 3rem 2rem; }
+    .empty-state-icon { font-size: 3.5rem; color: #bcc1ca; margin-bottom: 1rem; }
+    .empty-state-text { color: #8896ab; font-size: 1.1rem; font-weight: 500; }
+
+    .pagination-container {
+        display: flex; justify-content: center; align-items: center;
+        gap: 0.5rem; padding: 2rem 1.5rem; flex-wrap: wrap;
+    }
+
+    .pagination-info {
+        font-size: 0.9rem; color: #8896ab; font-weight: 600;
+        margin-right: 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .pagination-info i { color: #667eea; }
+    .pagination-nav { display: flex; gap: 0.35rem; }
+
+    .pagination-btn {
+        padding: 0.65rem 0.85rem; border: 2px solid #e9ecef; background: white;
+        border-radius: 8px; color: #667eea; text-decoration: none; font-weight: 600;
+        font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease;
+        display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+
+    .pagination-btn:hover {
+        border-color: #667eea; background: rgba(102,126,234,0.1); transform: translateY(-2px);
+    }
+
+    .pagination-btn.current {
+        background: var(--primary-gradient); color: white; border-color: transparent;
+    }
+
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .members-wrapper { animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    @media (max-width: 768px) {
+        .header-title-section h1 { font-size: 1.8rem; }
+        .members-header { flex-direction: column; }
+        .search-input-group { flex-direction: column; }
+        .search-input { min-width: auto; }
+        .modern-members-table { font-size: 0.85rem; }
+        .modern-members-table thead th,
+        .modern-members-table tbody td { padding: 0.75rem; }
+        .action-buttons { flex-direction: column; }
+        .btn-action { width: 100%; justify-content: center; }
+        .approbation-group { flex-direction: column; }
+    }
+</style>
+
+<div class="members-wrapper">
+    <div class="container-fluid">
+
+        <!-- BREADCRUMB -->
+        <div class="breadcrumb-container">
+            <ol class="breadcrumb-custom">
+                <li><i class="fas fa-home" style="color: #667eea; margin-right: 0.3rem;"></i></li>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Administration</a></li>
+                <li class="active"><i class="fas fa-users me-2" style="color: #667eea;"></i>Gestion des Membres</li>
+            </ol>
+        </div>
+
+        <!-- HEADER -->
+        <div class="members-header">
+            <div class="header-title-section">
+                <h1>
+                    <i class="fas fa-users-cog me-2" style="font-size: 2.2rem;"></i>
+                    Gestion des Membres
+                </h1>
+                <div class="header-subtitle">
+                    <i class="fas fa-chart-bar"></i>
+                    Gestion complète de votre communauté
+                </div>
+            </div>
+            <div class="stats-card-container">
+                <div class="stats-card">
+                    <i class="fas fa-users stats-icon"></i>
+                    <div class="stats-content">
+                        <div class="stats-label">Total Membres</div>
+                        <div class="stats-value">{{ total_membres }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-section">
+            <div class="search-card">
+                <div class="search-label">
+                    <i class="fas fa-search"></i> Rechercher des Membres
+                </div>
+                <form method="get">
+                    <div class="search-input-group">
+                        <input type="text" name="q" value="{{ query }}" class="search-input"
+                               placeholder="Recherchez par nom d'utilisateur, email ou autre...">
+                        <button class="search-btn" type="submit">
+                            <i class="fas fa-search"></i> Rechercher
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <i class="fas fa-list"></i>
+                Liste Complète des Membres
+            </div>
+            <div class="table-card-body">
+                {% if page_obj %}
+                <table class="modern-members-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th><i class="fas fa-user me-2" style="color:#667eea;"></i>Nom d'utilisateur</th>
+                            <th><i class="fas fa-envelope me-2" style="color:#667eea;"></i>Email</th>
+                            <th><i class="fas fa-calendar-alt me-2" style="color:#667eea;"></i>Date d'inscription</th>
+                            <th><i class="fas fa-shield-alt me-2" style="color:#667eea;"></i>Statut</th>
+                            <th><i class="fas fa-cogs me-2" style="color:#667eea;"></i>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for membre in page_obj %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="member-info">
+                                    <div class="member-avatar">{{ membre.username|first|upper }}</div>
+                                    <span class="member-username">{{ membre.username }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="member-email">
+                                    <i class="fas fa-envelope-open-text me-1" style="color:#667eea;opacity:0.6;"></i>
+                                    {{ membre.email }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="member-date">
+                                    <i class="fas fa-clock me-1" style="color:#667eea;opacity:0.6;"></i>
+                                    {{ membre.date_joined|date:"d M Y" }}
+                                </div>
+                            </td>
+
+                            <!-- KOLÒN STATUT -->
+                            <td>
+                                {% if not membre.email_verified %}
+                                    <span class="statut-badge statut-email">
+                                        <i class="fas fa-times-circle"></i>
+                                        Email non vérifié
+                                    </span>
+                                {% elif not membre.is_approved %}
+                                    <span class="statut-badge statut-attente">
+                                        <i class="fas fa-clock"></i>
+                                        En attente
+                                    </span>
+                                    <div class="approbation-group">
+                                        <form method="POST" action="{% url 'approuver_membre' membre.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="approuver">
+                                            <button type="submit" class="btn-approuver">
+                                                <i class="fas fa-check"></i> Approuver
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{% url 'approuver_membre' membre.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="rejeter">
+                                            <button type="submit" class="btn-rejeter">
+                                                <i class="fas fa-times"></i> Rejeter
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span class="statut-badge statut-actif">
+                                        <i class="fas fa-check-circle"></i>
+                                        Actif
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- KOLÒN AKSYON -->
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-view"
+                                            onclick="voirMembre({{ membre.id }})"
+                                            title="Voir le profil">
+                                        <i class="fas fa-eye"></i> <span>Voir</span>
+                                    </button>
+                                    <button class="btn-action btn-edit"
+                                            onclick="modifierMembre({{ membre.id }}, '{{ membre.first_name }}', '{{ membre.last_name }}', '{{ membre.email }}', '{{ membre.telephone }}', '{{ membre.adresse }}')"
+                                            title="Modifier">
+                                        <i class="fas fa-edit"></i> <span>Modifier</span>
+                                    </button>
+                                    <button class="btn-action btn-delete"
+                                            onclick="supprimerMembre({{ membre.id }}, '{{ membre.username }}')"
+                                            title="Supprimer">
+                                        <i class="fas fa-trash"></i> <span>Supprimer</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
+                    <div class="empty-state-text">Aucun membre ne correspond à votre recherche</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- PAGINATION -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div style="display:flex;justify-content:center;margin-top:2rem;">
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    <i class="fas fa-page"></i>
+                    Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="pagination-nav">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="pagination-btn"><i class="fas fa-chevron-double-left"></i></a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn">
+                            <i class="fas fa-chevron-left"></i> Précédent
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn">
+                            Suivant <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-btn">
+                            <i class="fas fa-chevron-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- MODAL VOIR -->
+<div class="modal fade" id="modalVoir" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;">
+            <div class="modal-header" style="background:var(--primary-gradient);color:white;border:none;padding:1.5rem 2rem;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-user-circle me-2"></i>Profil du membre</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="voirModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MODIFIER -->
+<div class="modal fade" id="modalModifier" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;padding:1.5rem 2rem;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Modifier le membre</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="formModifier">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Prénom</label>
+                            <input type="text" name="first_name" id="mod_first_name" class="form-control" style="border-radius:10px;">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Nom</label>
+                            <input type="text" name="last_name" id="mod_last_name" class="form-control" style="border-radius:10px;">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" name="email" id="mod_email" class="form-control" style="border-radius:10px;">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Téléphone</label>
+                            <input type="text" name="telephone" id="mod_telephone" class="form-control" style="border-radius:10px;">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Adresse</label>
+                            <input type="text" name="adresse" id="mod_adresse" class="form-control" style="border-radius:10px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn text-white rounded-pill px-4" style="background:var(--primary-gradient);">
+                        <i class="fas fa-save me-1"></i> Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SUPPRIMER -->
+<div class="modal fade" id="modalSupprimer" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#fa709a,#fee140);color:white;border:none;padding:1.5rem 2rem;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="mb-1">Voulez-vous vraiment supprimer le membre</p>
+                <strong class="text-danger fs-5" id="supprimerNom"></strong>
+                <div class="alert alert-warning mt-3 rounded-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Cette action est irréversible.
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 justify-content-center">
+                <form method="POST" id="formSupprimer">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-secondary rounded-pill px-4 me-2" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">
+                        <i class="fas fa-trash me-1"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function voirMembre(id) {
+    const modal = new bootstrap.Modal(document.getElementById('modalVoir'));
+    document.getElementById('voirModalBody').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>`;
+    modal.show();
+
+    const url = "{% url 'voir_membre_admin' 0 %}".replace('/0/', `/${id}/`);
+    fetch(url)
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById('voirModalBody').innerHTML = `
+                <div class="row g-3">
+                    <div class="col-12 text-center mb-2">
+                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:800;">
+                            ${d.username[0].toUpperCase()}
+                        </div>
+                        <h5 class="mt-2 mb-0 fw-bold">${d.username}</h5>
+                        <small class="text-muted">${d.numero_membre}</small>
+                    </div>
+                    <div class="col-6"><strong>Prénom:</strong><br>${d.first_name || '—'}</div>
+                    <div class="col-6"><strong>Nom:</strong><br>${d.last_name || '—'}</div>
+                    <div class="col-6"><strong>Email:</strong><br>${d.email}</div>
+                    <div class="col-6"><strong>Téléphone:</strong><br>${d.telephone || '—'}</div>
+                    <div class="col-6"><strong>Adresse:</strong><br>${d.adresse || '—'}</div>
+                    <div class="col-6"><strong>Inscrit le:</strong><br>${d.date_joined}</div>
+                    <div class="col-12 mt-2">
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div class="p-2 rounded-3" style="background:#e0e7ff;">
+                                    <div class="fw-bold fs-5 text-primary">${d.total_emprunts}</div>
+                                    <small class="text-muted">Total emprunts</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded-3" style="background:#d1fae5;">
+                                    <div class="fw-bold fs-5 text-success">${d.emprunts_actifs}</div>
+                                    <small class="text-muted">En cours</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded-3" style="background:#fee2e2;">
+                                    <div class="fw-bold fs-5 text-danger">${d.retards}</div>
+                                    <small class="text-muted">Retards</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        })
+        .catch(() => {
+            document.getElementById('voirModalBody').innerHTML = `
+                <div class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                    <p>Erreur lors du chargement du profil.</p>
+                </div>`;
+        });
+}
+
+function modifierMembre(id, prenom, nom, email, tel, adresse) {
+    document.getElementById('mod_first_name').value = prenom;
+    document.getElementById('mod_last_name').value  = nom;
+    document.getElementById('mod_email').value      = email;
+    document.getElementById('mod_telephone').value  = tel;
+    document.getElementById('mod_adresse').value    = adresse;
+    const url = "{% url 'modifier_membre_admin' 0 %}".replace('/0/', `/${id}/`);
+    document.getElementById('formModifier').action = url;
+    new bootstrap.Modal(document.getElementById('modalModifier')).show();
+}
+
+function supprimerMembre(id, username) {
+    document.getElementById('supprimerNom').textContent = username;
+    const url = "{% url 'supprimer_membre_admin' 0 %}".replace('/0/', `/${id}/`);
+    document.getElementById('formSupprimer').action = url;
+    new bootstrap.Modal(document.getElementById('modalSupprimer')).show();
+}
+</script>
+
+{% endblock %}

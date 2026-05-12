@@ -1,231 +1,445 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block content %}
-<main>
-<div class="container-fluid px-4">
 
-    <!-- TITLE -->
-    <h1 class="mt-4">Réservations</h1>
+<style>
+    .reservation-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
 
-    <!-- BREADCRUMB -->
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item">
-            <a href="{% url 'liste_reservations' %}">Dashboard</a>
-        </li>
-        <li class="breadcrumb-item active">Réservations</li>
-    </ol>
+    .header-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        overflow: hidden;
+    }
 
-    <!-- INFO CARD -->
-    <div class="card mb-4">
-        <div class="card-body">
-            Liste des réservations en attente de validation par le secrétariat.
+    .header-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-text h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .header-text p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .header-icon {
+        font-size: 4rem;
+        opacity: 0.2;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        border-left: 5px solid #667eea;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #719db3;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1a202c;
+        margin-top: 0.5rem;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+    }
+
+    .table-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .reservation-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .reservation-table thead th {
+        background: #f8f9fc;
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1.25rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .reservation-table tbody tr {
+        border-bottom: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .reservation-table tbody tr:nth-child(odd) {
+        background: #f9fafc;
+    }
+
+    .reservation-table tbody tr:hover {
+        background: #eff2f7;
+        box-shadow: inset 3px 0 0 #667eea;
+    }
+
+    .reservation-table td {
+        padding: 1.25rem;
+        color: #2d3748;
+    }
+
+    .table-id {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 0.95rem;
+    }
+
+    .table-titre {
+        font-weight: 600;
+        color: #1a202c;
+    }
+
+    .table-member {
+        color: #4a5568;
+    }
+
+    .table-email {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+
+    .table-date {
+        color: #719db3;
+        font-size: 0.95rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        gap: 0.5rem;
+    }
+
+    .status-attente {
+        background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+        color: #744210;
+    }
+
+    .status-confirmee {
+        background: linear-gradient(135deg, #74b9ff, #0984e3);
+        color: white;
+    }
+
+    .status-expiree {
+        background: linear-gradient(135deg, #dfe6e9, #b2bec3);
+        color: #2f3542;
+    }
+
+    .status-transformee {
+        background: linear-gradient(135deg, #55efc4, #00b894);
+        color: white;
+    }
+
+    .action-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .modal-content {
+        border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 2rem;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-label {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .modal-value {
+        color: #4a5568;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-message {
+        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+        border-left: 4px solid #667eea;
+        padding: 1.25rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #718096;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #cbd5e0;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .header-section {
+            padding: 2rem 1rem;
+        }
+
+        .header-text h1 {
+            font-size: 1.8rem;
+        }
+
+        .reservation-table {
+            font-size: 0.9rem;
+        }
+
+        .reservation-table td {
+            padding: 0.75rem;
+        }
+    }
+</style>
+
+<div class="reservation-container">
+    <div class="container-fluid px-4">
+
+        <!-- HEADER SECTION -->
+        <div class="header-section mb-4">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>📚 Réservations</h1>
+                    <p>Gérez les réservations de livres avec facilité</p>
+                </div>
+                <div class="header-icon">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- TABLE CARD -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-table me-1"></i>
-            Réservations en attente
+        <!-- STAT CARDS -->
+        <div class="row mb-4">
+            <div class="col-xl-4 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-label">Total Réservations</div>
+                    <div class="stat-value">{{ total_reservations }}</div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6">
+                <div class="stat-card" style="border-left-color: #0984e3;">
+                    <div class="stat-label">En Attente</div>
+                    <div class="stat-value">{{ count_en_attente }}</div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6">
+                <div class="stat-card" style="border-left-color: #00b894;">
+                    <div class="stat-label">Confirmées</div>
+                    <div class="stat-value">{{ count_confirmee }}</div>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body">
-            <table id="datatablesSimple" class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Livre</th>
-                        <th>Membre</th>
-                        <th>Email</th>
-                        <th>Date réservation</th>
-                        <th>Statut</th>
-                        <th class="text-center">Voir plus de detail</th>
-                    </tr>
-                </thead>
+        <!-- TABLE CARD -->
+        <div class="table-card">
+            <div class="table-header">
+                <h2>Liste des Réservations</h2>
+            </div>
 
-                <tbody>
-                {% for r in reservations %}
-                    <tr>
-                        <td>{{ r.livre.titre }}</td>
-                        <td>{{ r.utilisateur.nom_complet }}</td>
-                        <td>{{ r.utilisateur.email }}</td>
-                        <td>{{ r.date_reservation|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            <span class="badge bg-warning text-dark">
-                                {{ r.get_statut_display }}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                     <button class="btn btn-sm btn-outline-dark btn-view"
-                                    data-id="{{ r.id }}"
-                                    data-url="{% url 'reservation_detail_ajax' r.id %}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#reservationModal">
-                                <i class="fas fa-eye"></i>
-                    </button>
+            <div style="overflow-x: auto;">
+                {% if reservations %}
+                    <table class="reservation-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Livre</th>
+                                <th>Membre</th>
+                                <th>Email</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in reservations %}
+                            <tr>
+                                <td class="table-id">#{{ r.id }}</td>
+                                <td class="table-titre">{{ r.livre.titre }}</td>
+                                <td class="table-member">{{ r.utilisateur.nom_complet }}</td>
+                                <td class="table-email">{{ r.utilisateur.email }}</td>
+                                <td class="table-date">{{ r.date_reservation|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if r.statut == "en_attente" %}
+                                        <span class="status-badge status-attente">
+                                            <i class="fas fa-clock"></i> En attente
+                                        </span>
+                                    {% elif r.statut == "confirmee" %}
+                                        <span class="status-badge status-confirmee">
+                                            <i class="fas fa-check-circle"></i> Confirmée
+                                        </span>
+                                    {% elif r.statut == "expiree" %}
+                                        <span class="status-badge status-expiree">
+                                            <i class="fas fa-times-circle"></i> Expirée
+                                        </span>
+                                    {% elif r.statut == "transformee" %}
+                                        <span class="status-badge status-transformee">
+                                            <i class="fas fa-exchange-alt"></i> Transformée
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <button class="action-btn" data-bs-toggle="modal" data-bs-target="#reservationModal{{ r.id }}">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </button>
+                                </td>
+                            </tr>
 
-                            
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
+                            <!-- MODAL -->
+                            <div class="modal fade" id="reservationModal{{ r.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-book"></i> Détail Réservation #{{ r.id }}
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-4">
+                                                <div class="col-md-6">
+                                                    <div class="modal-label"><i class="fas fa-book"></i> Livre</div>
+                                                    <div class="modal-value">{{ r.livre.titre }}</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="modal-label"><i class="fas fa-user"></i> Membre</div>
+                                                    <div class="modal-value">{{ r.utilisateur.nom_complet }}</div>
+                                                </div>
+                                            </div>
 
-            </table>
+                                            <div class="row mb-4">
+                                                <div class="col-md-6">
+                                                    <div class="modal-label"><i class="fas fa-envelope"></i> Email</div>
+                                                    <div class="modal-value">{{ r.utilisateur.email }}</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="modal-label"><i class="fas fa-calendar"></i> Date Réservation</div>
+                                                    <div class="modal-value">{{ r.date_reservation|date:"d/m/Y H:i" }}</div>
+                                                </div>
+                                            </div>
+
+                                            {% if r.message_utilisateur %}
+                                            <div class="modal-message">
+                                                <strong><i class="fas fa-comment"></i> Message:</strong>
+                                                <p class="mt-2 mb-0">{{ r.message_utilisateur }}</p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>Aucune réservation</h3>
+                        <p>Il n'y a pas de réservation pour le moment</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
+
     </div>
-
 </div>
-</main>
-
-<div class="modal fade" id="reservationModal" tabindex="-1">
-<div class="modal-dialog modal-xl modal-dialog-centered">
-<div class="modal-content">
-
-<!-- HEADER -->
-<div class="modal-header bg-dark text-white">
-    <h5 class="modal-title">
-        <i class="fas fa-clipboard-check me-2"></i>
-        Validation de la réservation
-    </h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-</div>
-
-<!-- BODY -->
-<div class="modal-body">
-<div class="row">
-
-<!-- COL GAUCHE : LIVRE -->
-<div class="col-md-4 border-end text-center">
-    <img id="modalLivreImage"
-         src="{% static 'img/book_placeholder.png' %}"
-         class="img-fluid rounded shadow mb-3"
-         style="max-height:240px">
-
-    <h6 class="fw-bold mt-2" id="modalLivreTitre"></h6>
-</div>
-
-<!-- COL DROITE -->
-<div class="col-md-8">
-
-<h6 class="fw-bold mb-2">Membre</h6>
-<ul class="list-group mb-3">
-    <li class="list-group-item">
-        <strong>Nom :</strong>
-        <span id="modalMembreNom"></span>
-    </li>
-    <li class="list-group-item">
-        <strong>Email :</strong>
-        <span id="modalMembreEmail"></span>
-    </li>
-    <li class="list-group-item">
-        <strong>Date réservation :</strong>
-        <span id="modalDateReservation"></span>
-    </li>
-</ul>
-
-<h6 class="fw-bold mb-2">Contrôles automatiques</h6>
-<table class="table table-bordered align-middle">
-    <tr>
-        <td>Aucun retard</td>
-        <td class="text-center" id="critere-retard"></td>
-    </tr>
-    <tr>
-        <td>Livre disponible</td>
-        <td class="text-center" id="critere-disponible"></td>
-    </tr>
-    <tr>
-        <td>Pas de doublon</td>
-        <td class="text-center" id="critere-doublon"></td>
-    </tr>
-    <tr>
-        <td>Limite &lt; 3 réservations</td>
-        <td class="text-center" id="critere-limite"></td>
-    </tr>
-    <tr>
-        <td>Type</td>
-        <td class="text-center" id="critere-type"></td>
-    </tr>
-</table>
-
-<div class="alert alert-info">
-    <strong>Message du membre :</strong><br>
-    <em id="modalMessage"></em>
-</div>
-
-</div>
-</div>
-</div>
-
-<!-- FOOTER -->
-<div class="modal-footer justify-content-between">
-    <div>
-        <button id="btnValider" class="btn btn-success">
-            <i class="fas fa-check"></i> Valider
-        </button>
-        <button id="btnRefuser" class="btn btn-danger">
-            <i class="fas fa-times"></i> Refuser
-        </button>
-    </div>
-
-    <small class="text-muted">
-        L’emprunt sera créé uniquement lors du retrait physique après scan du QR Code.
-    </small>
-</div>
-
-</div>
-</div>
-</div>
-
-<script src="bootstrap.bundle.min.js"></script>
-<script>
-const AJAX_URL_TEMPLATE = "{% url 'reservation_detail_ajax' 0 %}";
-
-document.getElementById("reservationModal")
-.addEventListener("show.bs.modal", function (event) {
-
-    const button = event.relatedTarget;
-    const reservationId = button.getAttribute("data-id");
-
-    const url = AJAX_URL_TEMPLATE.replace("0", reservationId);
-
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Erreur HTTP " + response.status);
-            }
-            return response.json();
-        })
-        .then(data => {
-
-            document.getElementById("modalLivreTitre").textContent = data.livre.titre;
-            document.getElementById("modalLivreImage").src =
-                data.livre.image || "/static/img/book_placeholder.png";
-
-            document.getElementById("modalMembreNom").textContent = data.membre.nom;
-            document.getElementById("modalMembreEmail").textContent = data.membre.email;
-            document.getElementById("modalDateReservation").textContent = data.date_reservation;
-
-            document.getElementById("modalMessage").textContent = data.message;
-
-            document.getElementById("critere-retard").innerHTML = badge(data.criteres.retard);
-            document.getElementById("critere-disponible").innerHTML = badge(data.criteres.disponible);
-            document.getElementById("critere-doublon").innerHTML = badge(data.criteres.doublon);
-            document.getElementById("critere-limite").innerHTML = badge(data.criteres.limite);
-            document.getElementById("critere-type").textContent = data.criteres.type;
-        })
-        .catch(error => {
-            console.error("AJAX ERROR:", error);
-        });
-});
-
-function badge(val) {
-    return val
-        ? '<span class="badge bg-success">OK</span>'
-        : '<span class="badge bg-danger">NON</span>';
-}
-</script>
-
-
 
 {% endblock %}
-

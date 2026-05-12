@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gestion des retours{% endblock %}
+
+{% block content %}
+
+<style>
+    .retours-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .header-section {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        overflow: hidden;
+    }
+
+    .header-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-text h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .header-text p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .main-content {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .emprunts-list-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .list-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+    }
+
+    .list-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .emprunt-item {
+        display: block;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .emprunt-item:hover {
+        background: #f8f9fc;
+        transform: translateX(5px);
+        box-shadow: 0 2px 10px rgba(139, 92, 246, 0.1);
+    }
+
+    .emprunt-item.active {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        transform: translateX(10px);
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .emprunt-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #fbbf24;
+    }
+
+    .emprunt-title {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: inherit;
+    }
+
+    .emprunt-member {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+    }
+
+    .emprunt-date {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .emprunt-item.active .emprunt-member,
+    .emprunt-item.active .emprunt-date {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .status-badge-retard {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        gap: 0.25rem;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        min-height: 600px;
+    }
+
+    .detail-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 2rem;
+    }
+
+    .detail-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .detail-body {
+        padding: 2rem;
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .detail-section:last-child {
+        border-bottom: none;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-label {
+        font-weight: 700;
+        color: #374151;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .detail-value {
+        color: #4b5563;
+        font-size: 1rem;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .status-on-time {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .status-late {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+
+    .return-button {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .return-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #d1d5db;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h4 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        color: #9ca3af;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 2rem;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .modal-body {
+        padding: 2rem;
+        font-size: 1rem;
+    }
+
+    .modal-footer {
+        border: none;
+        padding: 1.5rem 2rem;
+        gap: 1rem;
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    .btn-confirm {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-confirm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .header-section {
+            padding: 2rem 1rem;
+        }
+
+        .header-text h1 {
+            font-size: 2rem;
+        }
+
+        .detail-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+</style>
+
+<div class="retours-container">
+    <div class="container-fluid px-4">
+
+        <!-- HEADER SECTION -->
+        <div class="header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>🔄 Gestion des Retours</h1>
+                    <p>Validation des retours de livres par les membres</p>
+                </div>
+                <div style="font-size: 4rem; opacity: 0.2;">
+                    <i class="fas fa-undo-alt"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+
+            <!-- EMPRUNTS LIST -->
+            <div class="emprunts-list-card">
+                <div class="list-header">
+                    <h3><i class="fas fa-list me-2"></i>Emprunts Actifs</h3>
+                </div>
+
+                <div style="max-height: 600px; overflow-y: auto;">
+                    {% for e in emprunts %}
+                        <a href="?emprunt_id={{ e.id }}"
+                           class="emprunt-item {% if emprunt and emprunt.id == e.id %}active{% endif %}">
+                            <div class="emprunt-title">{{ e.livre.titre }}</div>
+                            <div class="emprunt-member">
+                                <i class="fas fa-user me-1"></i>{{ e.utilisateur.get_full_name }}
+                            </div>
+                            <div class="emprunt-date">
+                                <i class="fas fa-calendar me-1"></i>Retour prévu: {{ e.date_retour_prevu|date:"d/m/Y" }}
+                            </div>
+                            {% if e.en_retard %}
+                                <div class="status-badge-retard mt-2">
+                                    <i class="fas fa-exclamation-triangle"></i>En retard
+                                </div>
+                            {% endif %}
+                        </a>
+                    {% empty %}
+                        <div class="empty-state" style="padding: 2rem;">
+                            <div class="empty-state-icon">📚</div>
+                            <h4>Aucun emprunt</h4>
+                            <p>Tous les livres ont été retournés</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- DETAIL PANEL -->
+            <div class="detail-card">
+                {% if emprunt %}
+                    <div class="detail-header">
+                        <h2><i class="fas fa-book me-2"></i>Détails de l'Emprunt</h2>
+                    </div>
+
+                    <div class="detail-body">
+                        <!-- BOOK & MEMBER INFO -->
+                        <div class="detail-section">
+                            <div class="detail-row">
+                                <div>
+                                    <div class="detail-label">
+                                        <i class="fas fa-book"></i>Livre
+                                    </div>
+                                    <div class="detail-value">{{ emprunt.livre.titre }}</div>
+                                </div>
+                                <div>
+                                    <div class="detail-label">
+                                        <i class="fas fa-user"></i>Membre
+                                    </div>
+                                    <div class="detail-value">{{ emprunt.utilisateur.get_full_name }}</div>
+                                </div>
+                            </div>
+
+                            <div class="detail-row">
+                                <div>
+                                    <div class="detail-label">
+                                        <i class="fas fa-user-edit"></i>Auteur
+                                    </div>
+                                    <div class="detail-value">{{ emprunt.livre.auteur }}</div>
+                                </div>
+                                <div>
+                                    <div class="detail-label">
+                                        <i class="fas fa-envelope"></i>Email
+                                    </div>
+                                    <div class="detail-value">{{ emprunt.utilisateur.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DATES INFO -->
+                        <div class="detail-section">
+                            <div class="detail-row">
+                                <div>
+                                    <div class="detail-label">
+                                        <i class="fas fa-calendar-plus"></i>Date Emprunt
+                                    </div>
+                                    <div class="detail-value">{{ emprunt.date_emprunt|date:"d/m/Y" }}</div>
+                                </div>
+                                <div>
+                                    <div class="detail-label">
+                                        <i class="fas fa-calendar-check"></i>Retour Prévu
+                                    </div>
+                                    <div class="detail-value">{{ emprunt.date_retour_prevu|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+
+                            <!-- STATUS INDICATOR -->
+                            <div class="text-center">
+                                {% if emprunt.en_retard %}
+                                    <div class="status-indicator status-late">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Emprunt en retard
+                                    </div>
+                                {% else %}
+                                    <div class="status-indicator status-on-time">
+                                        <i class="fas fa-check-circle"></i>
+                                        Dans les délais
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- RETURN BUTTON -->
+                        <div class="text-center">
+                            <button class="return-button" data-bs-toggle="modal" data-bs-target="#confirmReturnModal">
+                                <i class="fas fa-check-circle"></i>
+                                Valider le Retour du Livre
+                            </button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👈</div>
+                        <h4>Sélectionnez un emprunt</h4>
+                        <p>Cliquez sur un emprunt dans la liste à gauche pour voir les détails et valider le retour</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+{% if emprunt %}
+<div class="modal fade" id="confirmReturnModal" tabindex="-1" aria-labelledby="confirmReturnModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmReturnModalLabel">
+                    <i class="fas fa-check-circle me-2"></i>Confirmer le Retour
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-book fa-3x text-success mb-3"></i>
+                    <h5>Validation du retour</h5>
+                </div>
+                <p class="mb-3">
+                    Voulez-vous vraiment marquer le livre <strong>"{{ emprunt.livre.titre }}"</strong>
+                    comme retourné par <strong>{{ emprunt.utilisateur.get_full_name }}</strong> ?
+                </p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Cette action est irréversible et mettra fin à l'emprunt.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <form method="POST" action="{% url 'marquer_retour' emprunt.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-confirm">
+                        <i class="fas fa-check me-2"></i>Confirmer le Retour
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

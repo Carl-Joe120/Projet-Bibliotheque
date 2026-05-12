@@ -1,17 +1,22 @@
 from django.shortcuts import render , get_object_or_404 , redirect
-from django.http import HttpRequest , HttpResponse , JsonResponse
-from livres.models import Livre , Categorie , Emprunt
+from django.http import HttpRequest , HttpResponse , JsonResponse , FileResponse
+from livres.models import Livre , Categorie , Emprunt , Favori
+from livres.views import is_secretaire
+import utilisateurs
 from .models import Reservation , ReservationStatus
 from utilisateurs.models import Utilisateur
 from datetime import date
 from django.db.models import Count , Q 
-from django.contrib.auth.decorators import login_required 
+from django.contrib.auth.decorators import login_required , user_passes_test
 from .forms import ReservationForms
 from django.contrib import messages
 from django.template.loader import render_to_string
 import pdfkit
 from django.db import transaction
 from .utils import generer_pdf_qr
+from django.utils import timezone
+from django.views.decorators.csrf import ensure_csrf_cookie
+from utilisateurs.utils import log_activity, permission_requise
 
 # Create your views here.
 '''
@@ -35,12 +40,17 @@ def afficher_page_reservation(request):
         if livres_disponibles:
             livres_par_categorie[cat.nom] = livres_disponibles
             
+        favoris_ids = []
+        if request.user.is_authenticated:
+            favoris_ids = list(Favori.objects.filter(utilisateur = request.user).values_list('livre_id' , flat=True))
+            
+            
             
     context = {
         'livres_par_categorie': livres_par_categorie,        
         'search_scope': livres,
         'form': form,
-       
+        'favoris_ids' : favoris_ids, 
         
     }
             
@@ -112,78 +122,111 @@ def livre_disponible(livre):
 
 @login_required
 def reserver_livre(request, id):
-    MAX_EMPRUNTS = 3 
+
+    MAX_EMPRUNTS = 3
     MAX_RESERVATIONS = 3
-    with transaction.atomic():
-        livre = get_object_or_404(Livre, id=id)
-        
-        # 2 — VÉRIFIER RETARDS
-        if Emprunt.objects.filter(utilisateur=request.user, statut="retard").exists():
-            messages.error(request, "Désolé ! Vous avez des retards. Réservation impossible.")
-            return redirect("afficher_page_reservation")
 
-        #3 — VÉRIFIER DISPONIBILITÉ
-        if not livre_disponible(livre):
-            messages.error(request, "Désolé ! Ce livre n'est plus disponible.")
-            return redirect("afficher_page_reservation")
-
-        # 4 — UTILISATEUR A DÉJÀ RÉSERVÉ CE LIVRE ?
-        deja_reserve = Reservation.objects.filter(
-            utilisateur=request.user,
-            livre=livre,
-            statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
-        ).exists()
-        
-        if deja_reserve:
-            messages.error(request , "Désolé ! Vous avez déjà une réservation active pour ce livre")
-            return redirect("afficher_page_reservation")
-
-        #5 — LIMITE MAX DE RÉSERVATIONS
-        nb_reservations =  Reservation.objects.filter(
-            utilisateur=request.user,
-            statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
-        ).count() 
-        
-        
-        #Le membre ne peut pas avoir plus de 3 reservations en cours
-        if nb_reservations >= MAX_RESERVATIONS:
-            messages.error(request , "Désolé! Vous avez déjà atteint 3 réservations en cours alors vous ne pouvez pas faire de réservation")
-            return redirect("afficher_page_reservation")
-        
-        
-        #Le membre ne peut pas avoir plus de 3 emprunts en cours
-        nb_emprunts = Emprunt.objects.filter(utilisateur = request.user , statut = "en_cours").count()
-        
-        if nb_emprunts >= MAX_EMPRUNTS:
-            messages.error(request , "Désolé! Vous avez déjà atteint 3 emprunts en cours alors vous ne pouvez pas faire de réservation")
-            return redirect("afficher_page_reservation")
-        
-        
-        if Reservation.est_expire:
-            Reservation.statut = ReservationStatus.ANNULEE
-
-        #6 — TRAITEMENT FORMULAIRE AVEC DJANGO ModelForm
-        if request.method == "POST":
-            form = ReservationForms(request.POST)
-            if form.is_valid():
-                reservation = form.save(commit=False)
-                reservation.utilisateur = request.user            
-                reservation.livre = livre
-                reservation.type_reservation = "physique"
-                reservation.statut = ReservationStatus.EN_ATTENTE
-                reservation.message_utilisateur = form.cleaned_data.get("message_utilisateur", "")
-                reservation.confirme = False
-                reservation.save()                
-
-                messages.success(request, "Votre demande de réservation est envoyée.")
-                return redirect("mes_reservations")
-
-            else:
-                messages.error(request, "Erreur dans le formulaire.")
-
-        
+    if request.method != "POST":
         return redirect("afficher_page_reservation")
 
+    with transaction.atomic():
+
+        livre = get_object_or_404(
+            Livre.objects.select_for_update(),
+            id=id
+        )
+
+        # 1 — Vérifier retard
+        if Emprunt.objects.filter(
+            utilisateur=request.user,
+            statut="retard"
+        ).exists():
+
+            messages.error(
+                request,
+                "Désolé ! Vous avez des retards. Réservation impossible."
+            )
+            return redirect("afficher_page_reservation")
+
+        # 2 — Vérifier disponibilité
+        if not livre_disponible(livre):
+            messages.error(
+                request,
+                "Désolé ! Ce livre n'est plus disponible."
+            )
+            return redirect("afficher_page_reservation")
+
+        # 3 — Vérifier doublon
+        if Reservation.objects.filter(
+            utilisateur=request.user,
+            livre=livre,
+            statut__in=[
+                ReservationStatus.EN_ATTENTE,
+                ReservationStatus.CONFIRMEE
+            ]
+        ).exists():
+
+            messages.error(
+                request,
+                "Vous avez déjà une réservation active pour ce livre."
+            )
+            return redirect("afficher_page_reservation")
+
+        # 4 — Limite réservations
+        nb_reservations = Reservation.objects.filter(
+            utilisateur=request.user,
+            statut__in=[
+                ReservationStatus.EN_ATTENTE,
+                ReservationStatus.CONFIRMEE
+            ]
+        ).count()
+
+        if nb_reservations >= MAX_RESERVATIONS:
+            messages.error(
+                request,
+                "Vous avez déjà atteint la limite de 3 réservations."
+            )
+            return redirect("afficher_page_reservation")
+
+        # 5 — Limite emprunts
+        nb_emprunts = Emprunt.objects.filter(
+            utilisateur=request.user,
+            statut="en_cours"
+        ).count()
+
+        if nb_emprunts >= MAX_EMPRUNTS:
+            messages.error(
+                request,
+                "Vous avez déjà atteint la limite de 3 emprunts."
+            )
+            return redirect("afficher_page_reservation")
+
+        # 6 — Création réservation
+        form = ReservationForms(request.POST)
+
+        if not form.is_valid():
+            messages.error(request, "Erreur dans le formulaire.")
+            return redirect("afficher_page_reservation")
+
+        reservation = form.save(commit=False)
+
+        reservation.utilisateur = request.user
+        reservation.livre = livre
+        reservation.type_reservation = "physique"
+        reservation.statut = ReservationStatus.EN_ATTENTE
+        reservation.message_utilisateur = form.cleaned_data.get(
+            "message_utilisateur", ""
+        )
+        reservation.confirme = False
+        log_activity(request, "RESERVATION", "Nouvelle réservation effectuée")
+        reservation.save()
+
+        messages.success(
+            request,
+            "Votre demande de réservation est envoyée."
+        )
+
+        return redirect("mes_reservations")
         
 #detail sur une resservation précise d'un utilisateur
 
@@ -210,25 +253,35 @@ def mes_reservations(request):
 
 @login_required
 def annuler_reservation(request, id):
-    try:
-        reservation = Reservation.objects.get(id=id, utilisateur=request.user)
-    except Reservation.DoesNotExist:
-        messages.error(request, "Réservation introuvable")
-        return redirect("mes_reservations")
+    with transaction.atomic():
+        reservation = get_object_or_404(
+            Reservation.objects.select_for_update(),
+            id=id,
+            utilisateur=request.user
+        )
 
-    if reservation.statut != "en_attente":   
-        messages.error(request, "Action impossible")
-        return redirect("mes_reservations")
+        if reservation.statut == ReservationStatus.ANNULEE:
+            messages.warning(request, "Déjà annulée.")
+            return redirect("mes_reservations")
 
-    reservation.statut = "annulee"
-    reservation.save()
-    messages.success(request, "Votre réservation a été annulée avec succès.")
-    return redirect("mes_reservations")    
+        if reservation.statut == ReservationStatus.TRANSFORMEE:
+            messages.error(request, "Impossible d'annuler une réservation déjà utilisée.")
+            return redirect("mes_reservations")
+
+        # ❌ Retire: livre.quantite += 1 — livre_disponible() konte otomatikman
+        reservation.statut = ReservationStatus.ANNULEE
+        reservation.save()
+        log_activity(request, "ANNULATION", "Réservation annulée")
+        messages.success(request, "Réservation annulée avec succès.")
+
+    return redirect("mes_reservations")  
 
 @login_required
+@user_passes_test(is_secretaire)
+@permission_requise("gestion_reservations")
 def gestion_reservations(request):
     statut = request.GET.get('statut' , ReservationStatus.EN_ATTENTE)
-    reservations = Reservation.objects.filter(statut-statut).order_by('-date_reservation')
+    reservations = Reservation.objects.filter(statut=statut).order_by('-date_reservation')
     
     context = {
         'statut' : statut,
@@ -236,7 +289,7 @@ def gestion_reservations(request):
         'statuts': ReservationStatus
     }
     
-    return render (request , 'reservation/gestion_reservations.html' , context) 
+    return render (request , 'reservation/liste_reservations.html' , context) 
 
 @login_required
 def confirmer_reservation(request , id):
@@ -262,16 +315,35 @@ def rejeter_reservation(request , id):
     
     reservation.statut = ReservationStatus.ANNULEE
     reservation.save()
+    
+    log_activity(request , "ANNULATION" , f"Réservation #{reservation.id} rejetée par {request.user.username}")
+    
+    
     messages.success(request , "Réservation rejetée avec succès")
     
 @login_required
 def liste_reservations(request):
-    reservations = (Reservation.objects.filter(statut= ReservationStatus.EN_ATTENTE).select_related("livre" , "utilisateur").order_by('-date_reservation'))
+       
+    reservations_en_cours = Reservation.objects.filter(
+        statut__in=[ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE]
+    ).select_related("livre", "utilisateur").order_by("-date_reservation")
+
+    # Count by status
+    count_en_attente = Reservation.objects.filter(
+        statut=ReservationStatus.EN_ATTENTE
+    ).count()
     
+    count_confirmee = Reservation.objects.filter(
+        statut=ReservationStatus.CONFIRMEE
+    ).count()
+
     context = {
-        'reservations' : reservations
+        "reservations": reservations_en_cours,
+        "count_en_attente": count_en_attente,
+        "count_confirmee": count_confirmee,
+        "total_reservations": reservations_en_cours.count()
     }
-    return render(request , 'reservation/liste_reservations.html' , context)
+    return render(request, "reservation/liste_reservations.html", context)
     
 
 @login_required
@@ -322,13 +394,49 @@ def reservation_detail_ajax(request, reservation_id):
     return JsonResponse(data)
 
 
+
 @login_required
-def telecharger_pdf_reservation(request , id):
-    reservation = get_object_or_404(Reservation , id = id)
-    
+def telecharger_recu(request, id):
+    reservation = get_object_or_404(
+        Reservation,
+        id=id,
+        utilisateur=request.user
+    )
+
     pdf_buffer = generer_pdf_qr(reservation)
-    response = HttpResponse(pdf_buffer.getvalue() , content_type = 'application/pdf')
+
+    return FileResponse(
+        pdf_buffer,
+        as_attachment=True,
+        filename=f"reservation_{reservation.id}.pdf"
+    )
+
+def est_secretaire(user):
+    return user.is_authenticated and user.role == "secretaire"
     
-    response['Content-Disposition'] = (f'attachment; filename="reservation_{reservation.id}.pdf"' )
+@login_required
+@user_passes_test(est_secretaire, login_url='loginview')
+def scan_qr(request, token):
+    reservation = get_object_or_404(Reservation, qr_token=token)
+
+    # Expiration
+    if reservation.est_expire():
+        reservation.statut = ReservationStatus.EXPIREE
+        reservation.save()
+        statut_qr = "expire"
+    elif reservation.statut == ReservationStatus.ANNULEE:
+        statut_qr = "annule"
+    elif reservation.statut == ReservationStatus.TRANSFORMEE:
+        statut_qr = "deja_valide"
+    else:
+        statut_qr = "valide"
+
+    return render(request, "reservation/scan_result.html", {
+        "reservation": reservation,
+        "statut_qr": statut_qr
+    })
     
-    return response
+    
+def redirect_scan(request, token):
+    
+    return redirect("scan_qr", token=token)

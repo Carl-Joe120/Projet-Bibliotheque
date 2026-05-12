@@ -1,0 +1,734 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ajouter un Livre{% endblock %}
+
+{% block content %}
+
+{# ── TOAST CONTAINER — ajoute sèlman, pa chanje design ── #}
+<div id="isbnToastContainer" style="
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+"></div>
+
+<style>
+    .add-book-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .header-section {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        overflow: hidden;
+    }
+
+    .header-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-text h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .header-text p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .form-header h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-body {
+        padding: 2.5rem;
+    }
+
+    .form-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #8b5cf6;
+        transition: all 0.3s ease;
+        animation: slideInUp 0.6s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .form-section:nth-child(1) { animation-delay: 0.1s; }
+    .form-section:nth-child(2) { animation-delay: 0.2s; }
+    .form-section:nth-child(3) { animation-delay: 0.3s; }
+    .form-section:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-section:hover {
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+    }
+
+    .section-icon.basic   { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .section-icon.details { background: linear-gradient(135deg, #10b981, #059669); }
+    .section-icon.media   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .section-icon.online  { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group { position: relative; }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .form-control.is-invalid {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    select.form-control {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1rem;
+        padding-right: 2.5rem;
+        appearance: none;
+    }
+
+    textarea.form-control  { resize: vertical; min-height: 120px; }
+    input[type="date"].form-control   { padding: 0.875rem 1rem; }
+    input[type="number"].form-control { padding: 0.875rem 1rem; }
+    input[type="file"].form-control   { padding: 0.5rem 1rem; }
+
+    .invalid-feedback {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        font-weight: 500;
+    }
+
+    .form-group.has-error .form-control {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .help-text {
+        color: #6b7280;
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        font-style: italic;
+    }
+
+    .textarea-control { resize: vertical; min-height: 120px; }
+
+    .file-input-wrapper {
+        position: relative;
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+        cursor: pointer;
+    }
+
+    .file-input-wrapper:hover {
+        border-color: #8b5cf6;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.1);
+    }
+
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-input-label {
+        display: block;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .file-input-text {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .file-input-icon {
+        font-size: 2rem;
+        color: #8b5cf6;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .submit-section {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .submit-btn:hover::before { left: 100%; }
+
+    .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+
+    .submit-btn:active { transform: translateY(-1px); }
+
+    .alert-custom {
+        border: none;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .header-content { flex-direction: column; text-align: center; gap: 1rem; }
+        .header-text h1 { font-size: 2rem; }
+        .form-body      { padding: 1.5rem; }
+        .form-section   { padding: 1.5rem; }
+        .form-row       { grid-template-columns: 1fr; gap: 1rem; }
+        .section-header { flex-direction: column; text-align: center; gap: 0.5rem; }
+    }
+
+    /* ── TOAST STYLES — ajoute sèlman ── */
+    .isbn-toast {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        color: white;
+        font-size: 0.95rem;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        min-width: 320px;
+        max-width: 420px;
+        pointer-events: all;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .isbn-toast.show { transform: translateX(0); opacity: 1; }
+    .isbn-toast.hide { transform: translateX(120%); opacity: 0; transition: all 0.3s ease-in; }
+    .isbn-toast.toast-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-left: 5px solid #047857;
+    }
+    .isbn-toast.toast-error {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-left: 5px solid #b91c1c;
+    }
+    .isbn-toast-icon    { font-size: 1.3rem; flex-shrink: 0; }
+    .isbn-toast-message { flex: 1; line-height: 1.4; }
+    .isbn-toast-close {
+        background: rgba(255,255,255,0.25); border: none; color: white;
+        width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+        font-size: 0.8rem; display: flex; align-items: center;
+        justify-content: center; flex-shrink: 0; transition: background 0.2s;
+    }
+    .isbn-toast-close:hover { background: rgba(255,255,255,0.4); }
+
+    /* ── ISBN FIELD FEEDBACK — ajoute sèlman ── */
+    .isbn-field.is-invalid-isbn {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important;
+    }
+    .isbn-field.is-valid-isbn {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 3px rgba(16,185,129,0.15) !important;
+    }
+    .isbn-feedback { font-size: 0.82rem; margin-top: 0.35rem; font-weight: 600; display: none; }
+    .isbn-feedback.show-feedback  { display: block; }
+    .isbn-feedback.error-feedback   { color: #dc2626; }
+    .isbn-feedback.success-feedback { color: #059669; }
+</style>
+
+<div class="add-book-container">
+    <div class="container-fluid px-4">
+
+        <!-- HEADER SECTION — PA CHANJE -->
+        <div class="header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>📚 Ajouter un Livre</h1>
+                    <p>Enrichissez votre collection littéraire</p>
+                </div>
+                <a href="{% url 'liste_livres_secretaire' %}" class="back-btn">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <!-- MESSAGES — PA CHANJE -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible alert-custom fade show" role="alert">
+                    <strong><i class="fas fa-info-circle me-2"></i></strong>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- FORM CARD — PA CHANJE -->
+        <div class="form-card">
+            <div class="form-header">
+                <h2>📖 Nouveau Livre</h2>
+                <p>Remplissez les informations ci-dessous</p>
+            </div>
+
+            <div class="form-body">
+                <form method="POST" enctype="multipart/form-data" id="ajouterLivreForm">
+                    {% csrf_token %}
+
+                    <!-- BASIC INFORMATION — PA CHANJE eksepte blòk ISBN -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon basic">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <h3 class="section-title">Informations de Base</h3>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_titre" class="form-label">Titre du Livre</label>
+                                {{ form.titre }}
+                                {% if form.titre.errors %}
+                                    {% for error in form.titre.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="id_auteur" class="form-label">Auteur</label>
+                                {{ form.auteur }}
+                                {% if form.auteur.errors %}
+                                    {% for error in form.auteur.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_isbn" class="form-label">ISBN</label>
+
+                                {# ── CHANJMAN SÈLMAN ICI : ranplase {{ form.isbn }} ── #}
+                                <input
+                                    type="text"
+                                    id="id_isbn"
+                                    name="isbn"
+                                    class="form-control isbn-field"
+                                    value="{{ form.isbn.value|default:'' }}"
+                                    inputmode="numeric"
+                                    maxlength="13"
+                                    placeholder="Ex: 9782012345678"
+                                    autocomplete="off"
+                                >
+                                {# Feedback vèt/wouj anba champ ISBN — ajoute sèlman #}
+                                <div id="isbnFeedback" class="isbn-feedback"></div>
+
+                                {% if form.isbn.errors %}
+                                    {% for error in form.isbn.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="id_categorie" class="form-label">Catégorie</label>
+                                {{ form.categorie }}
+                                {% if form.categorie.errors %}
+                                    {% for error in form.categorie.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PUBLICATION DETAILS — PA CHANJE -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon details">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <h3 class="section-title">Détails de Publication</h3>
+                        </div>
+                        <div class="form-row">
+    <div class="form-group">
+        <label for="id_date_publication" class="form-label">Date de Publication</label>
+
+        {{ form.date_publication }}
+
+        {% if form.date_publication.errors %}
+            {% for error in form.date_publication.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+                            <div class="form-group">
+                                <label for="id_quantite" class="form-label">Quantité Disponible</label>
+                                {{ form.quantite }}
+                                {% if form.quantite.errors %}
+                                    {% for error in form.quantite.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_resume" class="form-label">Résumé du Livre</label>
+                            {{ form.resume }}
+                            {% if form.resume.errors %}
+                                {% for error in form.resume.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- MEDIA — PA CHANJE -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon media">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <h3 class="section-title">Média</h3>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_couverture" class="form-label">Couverture du Livre</label>
+                            <div class="file-input-wrapper">
+                                <i class="fas fa-cloud-upload-alt file-input-icon"></i>
+                                <div class="file-input-label">Cliquez pour sélectionner une image</div>
+                                <div class="file-input-text">Formats acceptés: JPG, PNG, GIF (Max: 5MB)</div>
+                                {{ form.couverture }}
+                            </div>
+                            {% if form.couverture.errors %}
+                                {% for error in form.couverture.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- SUBMIT — PA CHANJE -->
+                    <div class="submit-section">
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-plus-circle me-2"></i>Ajouter ce Livre
+                        </button>
+                        <p class="text-muted mt-3 mb-0">Le livre sera ajouté à votre collection après validation</p>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+
+ 
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("id_date_publication").setAttribute("max", today);
+    
+// ── Toast ──────────────────────────────────────────────────────
+function showIsbnToast(message, type = 'success', duration = 4000) {
+    const container = document.getElementById('isbnToastContainer');
+    const icons = {
+        success: '<i class="fas fa-check-circle"></i>',
+        error:   '<i class="fas fa-times-circle"></i>'
+    };
+    const toast = document.createElement('div');
+    toast.className = `isbn-toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="isbn-toast-icon">${icons[type]}</div>
+        <div class="isbn-toast-message">${message}</div>
+        <button class="isbn-toast-close" onclick="dismissIsbnToast(this.parentElement)">
+            <i class="fas fa-times"></i>
+        </button>`;
+    container.appendChild(toast);
+    requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+    toast._timer = setTimeout(() => dismissIsbnToast(toast), duration);
+}
+
+function dismissIsbnToast(toast) {
+    if (!toast) return;
+    clearTimeout(toast._timer);
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 350);
+}
+
+// ── Validasyon ISBN-13 ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+
+    const isbnInput  = document.getElementById('id_isbn');
+    const feedbackEl = document.getElementById('isbnFeedback');
+    const form       = document.getElementById('ajouterLivreForm');
+    if (!isbnInput) return;
+
+    // Bloke lèt — aksepte sèlman chif
+    isbnInput.addEventListener('keypress', function (e) {
+        if (!/^\d$/.test(e.key) && !['Backspace','Delete','Tab'].includes(e.key)) {
+            e.preventDefault();
+            showIsbnToast(
+                '<strong>Attention ✗</strong><br><small>ISBN doit être composé de 13 chiffres.</small>',
+                'error', 2500
+            );
+        }
+    });
+
+    // Netwaye si yo kole (paste)
+    isbnInput.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData)
+                        .getData('text').replace(/\D/g, '').slice(0, 13);
+        isbnInput.value = pasted;
+        updateFeedback(pasted);
+    });
+
+    // Feedback pandan y ap tape
+    isbnInput.addEventListener('input', function () {
+        const cleaned = isbnInput.value.replace(/\D/g, '').slice(0, 13);
+        if (isbnInput.value !== cleaned) isbnInput.value = cleaned;
+        updateFeedback(cleaned);
+    });
+
+    // Toast lè yo kite champ lan
+    isbnInput.addEventListener('blur', function () {
+        const val = isbnInput.value.trim();
+        if (val.length === 0) return;
+        if (val.length === 13) {
+            showIsbnToast(
+                `<strong>ISBN-13 aksepte ✓</strong><br><small>${val}</small>`,
+                'success'
+            );
+        } else {
+            showIsbnToast(
+                `<strong>ISBN invalide ✗</strong><br>
+                 <small>Ou bezwen 13 chif. Aktyèlman : ${val.length} chif.</small>`,
+                'error'
+            );
+        }
+    });
+
+    // Bloke soumèt si ISBN invalid
+    form.addEventListener('submit', function (e) {
+        const val = isbnInput.value.trim();
+        if (val.length > 0 && val.length !== 13) {
+            e.preventDefault();
+            showIsbnToast(
+                `<strong>Le formulaire ne peut pas être soumis ✗</strong><br>
+                 <small>ISBN doit avoir 13 chiffres. Actuellement : ${val.length}.</small>`,
+                'error', 5000
+            );
+            isbnInput.focus();
+        }
+    });
+
+    // Feedback vizèl anba champ
+    function updateFeedback(val) {
+        if (val.length === 0) {
+            isbnInput.classList.remove('is-valid-isbn', 'is-invalid-isbn');
+            feedbackEl.className = 'isbn-feedback';
+            feedbackEl.textContent = '';
+            return;
+        }
+        if (val.length < 13) {
+            isbnInput.classList.add('is-invalid-isbn');
+            isbnInput.classList.remove('is-valid-isbn');
+            feedbackEl.className = 'isbn-feedback show-feedback error-feedback';
+            feedbackEl.textContent = `⚠ ${val.length}/13 chif — bezwen egzakteman 13 chif.`;
+        } else {
+            isbnInput.classList.add('is-valid-isbn');
+            isbnInput.classList.remove('is-invalid-isbn');
+            feedbackEl.className = 'isbn-feedback show-feedback success-feedback';
+            feedbackEl.textContent = '✓ ISBN-13 valid — 13 chif konfime.';
+        }
+    }
+    // Champ vid pou ajouter — pa rele updateFeedback isit
+});
+</script>
+{% endblock extra_js %}

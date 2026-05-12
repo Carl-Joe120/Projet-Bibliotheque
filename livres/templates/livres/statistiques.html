@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Google Fonts for better typography -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* Import Inter Font */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Enhanced Modern Dashboard Styles */
+.dashboard-wrapper {
+    padding: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+.dashboard-header h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.dashboard-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Glassmorphism Stat Cards */
+.stat-card {
+    border-radius: 25px;
+    padding: 35px 30px;
+    color: white;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(20px);
+    background: rgba(255,255,255,0.1);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-15px) scale(1.05);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    backdrop-filter: blur(25px);
+}
+
+.stat-card .card-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    opacity: 0.95;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.stat-card h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 15px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.stat-card h3 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.bg-primary-custom { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.bg-success-custom { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.bg-danger-custom { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.bg-info-custom { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.bg-warning-custom { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+/* Glassmorphism Chart Cards */
+.chart-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 25px;
+    padding: 35px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(20px);
+    transition: all 0.4s ease;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.chart-card:hover {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    backdrop-filter: blur(25px);
+}
+
+.chart-card .title {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 1.4rem;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.chart-card .title i {
+    color: #667eea;
+    margin-right: 10px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .dashboard-wrapper {
+        padding: 20px;
+    }
+    .stat-card {
+        margin-bottom: 20px;
+    }
+}
+
+/* Enhanced Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.stat-card, .chart-card {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.stat-card:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(even) {
+    animation-delay: 0.2s;
+}
+
+.chart-card:nth-child(1) {
+    animation-delay: 0.3s;
+}
+
+.chart-card:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+/* Footer */
+.dashboard-footer {
+    text-align: center;
+    margin-top: 50px;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 1;
+}
+</style>
+
+<div class="dashboard-wrapper">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt me-3"></i>Dashboard Administrateur</h1>
+        <p>Analyse complète et visualisation des données de la bibliothèque</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row mb-5">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card bg-primary-custom">
+                <div class="card-icon"><i class="fas fa-book-open"></i></div>
+                <h6>Total Livres</h6>
+                <h3>{{ total_livres }}</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card bg-success-custom">
+                <div class="card-icon"><i class="fas fa-check-double"></i></div>
+                <h6>Disponibles</h6>
+                <h3>{{ livres_disponibles }}</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card bg-danger-custom">
+                <div class="card-icon"><i class="fas fa-ban"></i></div>
+                <h6>Indisponibles</h6>
+                <h3>{{ livres_indisponibles }}</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card bg-info-custom">
+                <div class="card-icon"><i class="fas fa-exchange-alt"></i></div>
+                <h6>Total Emprunts</h6>
+                <h3>{{ total_emprunts }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row KPI -->
+    <div class="row mb-5">
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="stat-card bg-warning-custom">
+                <div class="card-icon"><i class="fas fa-hourglass-half"></i></div>
+                <h6>Emprunts en Cours</h6>
+                <h3>{{ emprunts_en_cours }}</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="stat-card bg-success-custom">
+                <div class="card-icon"><i class="fas fa-undo-alt"></i></div>
+                <h6>Retournés</h6>
+                <h3>{{ emprunts_retournes }}</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="stat-card bg-danger-custom">
+                <div class="card-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <h6>En Retard</h6>
+                <h3>{{ emprunts_retard }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <h6 class="title"><i class="fas fa-chart-pie"></i>Livres par Catégorie</h6>
+                <canvas id="categorieChart" style="max-height: 350px;"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <h6 class="title"><i class="fas fa-chart-area"></i>Emprunts (7 Derniers Jours)</h6>
+                <canvas id="empruntChart" style="max-height: 350px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="dashboard-footer">
+        <p>&copy; 2026 Bibliothèque Michel Tardieu - Dashboard Administrateur</p>
+    </div>
+
+</div>
+
+<script>
+// Enhanced Chart Configurations with Modern Styling
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'bottom',
+            labels: {
+                padding: 25,
+                usePointStyle: true,
+                font: {
+                    size: 13,
+                    weight: '500',
+                    family: 'Inter, sans-serif'
+                },
+                color: '#2c3e50'
+            }
+        },
+        tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            cornerRadius: 12,
+            displayColors: false,
+            titleFont: {
+                size: 14,
+                weight: '600',
+                family: 'Inter, sans-serif'
+            },
+            bodyFont: {
+                size: 13,
+                family: 'Inter, sans-serif'
+            }
+        }
+    },
+    animation: {
+        duration: 2000,
+        easing: 'easeOutQuart'
+    }
+};
+
+// Doughnut Chart for Categories with Enhanced Colors
+new Chart(document.getElementById('categorieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ labels_cat|safe }},
+        datasets: [{
+            data: {{ data_cat|safe }},
+            backgroundColor: [
+                '#667eea', '#764ba2', '#f093fb', '#f5576c',
+                '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+                '#fa709a', '#fee140', '#a8edea', '#fed6e3'
+            ],
+            borderWidth: 0,
+            hoverOffset: 15,
+            hoverBorderWidth: 3,
+            hoverBorderColor: 'rgba(255,255,255,0.8)'
+        }]
+    },
+    options: chartOptions
+});
+
+// Line Chart for Loans with Gradient Fill
+const ctx = document.getElementById('empruntChart').getContext('2d');
+const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+gradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
+gradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+
+new Chart(document.getElementById('empruntChart'), {
+    type: 'line',
+    data: {
+        labels: {{ labels_days|safe }},
+        datasets: [{
+            label: "Nombre d'Emprunts",
+            data: {{ data_days|safe }},
+            borderColor: '#667eea',
+            backgroundColor: gradient,
+            borderWidth: 4,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#667eea',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 3,
+            pointRadius: 8,
+            pointHoverRadius: 10,
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#667eea',
+            pointHoverBorderWidth: 3
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.05)',
+                    borderDash: [5, 5]
+                },
+                ticks: {
+                    font: {
+                        size: 12,
+                        family: 'Inter, sans-serif'
+                    },
+                    color: '#2c3e50'
+                }
+            },
+            x: {
+                grid: {
+                    color: 'rgba(0,0,0,0.05)',
+                    borderDash: [5, 5]
+                },
+                ticks: {
+                    font: {
+                        size: 12,
+                        family: 'Inter, sans-serif'
+                    },
+                    color: '#2c3e50'
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

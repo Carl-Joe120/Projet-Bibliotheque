@@ -1,10 +1,11 @@
 from .models import Notifications
+from livres.services import verifier_retards_et_envoyer_notifications
 
 def notifications_nav(request):
     if not request.user.is_authenticated:
         return {}
 
-    
+    verifier_retards_et_envoyer_notifications()
     qs = Notifications.objects.filter(
         utilisateur=request.user
     ).order_by('-date_envoi')

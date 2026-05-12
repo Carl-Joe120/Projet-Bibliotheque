@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.retard-page {
+    padding: 1.5rem 0;
+}
+.retard-hero {
+    border-radius: 1.75rem;
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.14), rgba(248, 113, 113, 0.06));
+    border: 1px solid rgba(220, 53, 69, 0.18);
+    padding: 2rem;
+    margin-bottom: 1.75rem;
+}
+.retard-hero h1 {
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+.retard-hero p {
+    color: #6b7280;
+    margin-bottom: 0;
+}
+.retard-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 999px;
+    background: #ffffff;
+    padding: 0.85rem 1rem;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+.retard-summary .summary-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #dc2626;
+}
+.retard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+.retard-card {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    background: #ffffff;
+}
+.retard-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.1);
+}
+.retard-card-body {
+    padding: 1.75rem;
+}
+.retard-card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: #111827;
+}
+.retard-card-author {
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+.retard-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.95rem;
+    border-radius: 999px;
+    background: rgba(220, 53, 69, 0.14);
+    color: #b91c1c;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.retard-info {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.retard-info div {
+    min-width: 140px;
+    color: #4b5563;
+    font-size: 0.95rem;
+}
+.retard-actions {
+    margin-top: 1.5rem;
+}
+.retard-actions .btn {
+    border-radius: 0.85rem;
+    padding: 0.75rem 1.2rem;
+}
+.retard-empty {
+    border-radius: 1.5rem;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    padding: 2.5rem;
+    text-align: center;
+    color: #475569;
+}
+.retard-empty h4 {
+    margin-bottom: 1rem;
+}
+.modal-retard .modal-content {
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+.modal-retard .modal-header {
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+}
+.modal-retard .modal-body {
+    padding: 1.75rem;
+}
+.modal-retard .modal-footer {
+    border-top: 1px solid rgba(229, 231, 235, 0.9);
+}
+.modal-retard .modal-body img {
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 1rem;
+}
+.modal-retard .text-warning {
+    color: #ca1010 !important;
+}
+.modal-retard small {
+    color: #6b7280;
+}
+</style>
+
+<div class="container-fluid px-4 retard-page">
+    <div class="retard-hero row align-items-center gx-4">
+        <div class="col-lg-8">
+            <h1><i class="fas fa-exclamation-circle text-danger me-2"></i>Livres en retard</h1>
+            <p>Visualisez vos retards actuels dans un tableau de bord clair et professionnel, avec toutes les informations essentielles.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <div class="retard-summary justify-content-end">
+                <div>
+                    <div class="text-muted text-uppercase small">Total retards</div>
+                    <div class="summary-value">{{ retards|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if retards %}
+    <div class="retard-grid">
+        {% for emprunt in retards %}
+        <div class="retard-card">
+            <div class="retard-card-body">
+                <h2 class="retard-card-title">{{ emprunt.livre.titre }}</h2>
+                <p class="retard-card-author">{{ emprunt.livre.auteur }}</p>
+
+                <span class="retard-badge"><i class="fas fa-clock"></i>{{ emprunt.jours_retard }} jour(s) de retard</span>
+
+                <div class="retard-info">
+                    <div>
+                        <div class="text-uppercase text-secondary small">Date prévue</div>
+                        <div>{{ emprunt.date_retour_prevu }}</div>
+                    </div>
+                    <div>
+                        <div class="text-uppercase text-secondary small">Statut</div>
+                        <div class="text-danger fw-semibold">Retard</div>
+                    </div>
+                </div>
+
+                <div class="retard-actions">
+                    <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalRetard{{ emprunt.id }}">
+                        Voir plus
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade modal-retard" id="modalRetard{{ emprunt.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Retard confirmé</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% if emprunt.livre.couverture %}
+                        <div class="text-center mb-4">
+                            <img src="{{ emprunt.livre.couverture.url }}" alt="Couverture {{ emprunt.livre.titre }}" class="img-fluid shadow-sm">
+                        </div>
+                        {% endif %}
+                        <h5 class="fw-semibold mb-2">{{ emprunt.livre.titre }}</h5>
+                        <p class="text-muted mb-3">{{ emprunt.livre.auteur }}</p>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="text-uppercase text-secondary small mb-1">Date prévue</div>
+                                <div>{{ emprunt.date_retour_prevu }}</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="text-uppercase text-secondary small mb-1">Jours de retard</div>
+                                <div class="text-danger fw-semibold">{{ emprunt.jours_retard }}</div>
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="text-danger fw-semibold">Merci de ramener ce livre au plus vite pour éviter des pénalités supplémentaires.</p>
+                        <small>Contactez la bibliothèque si vous avez besoin d’une prolongation.</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="retard-empty mt-4">
+        <h4>Aucun retard pour le moment.</h4>
+        <p>Bravo ! Vous n’avez aucun emprunt en retard. Continuez à gérer vos prêts dans les délais.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

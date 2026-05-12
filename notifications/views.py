@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render , get_object_or_404 , redirect
 from django.contrib.auth.decorators import login_required
 from .models import Notifications
-from django.http import JsonResponse
+from django.http import JsonResponse 
 # Create your views here.
 
 
@@ -22,6 +22,7 @@ def liste_notifications(request):
     data = []
     for n in notifications:
         data.append({
+            'id' : n.id,
             'titre' : n.titre,
             'message' : n.message , 
             'link' : n.link,
@@ -30,3 +31,15 @@ def liste_notifications(request):
         })
         
     return JsonResponse({'data' : data})
+
+def marquer_notifications_comme_lues(request, id):
+    notif = get_object_or_404(
+        Notifications,
+        utilisateur=request.user,
+        id=id
+    )
+
+    notif.lu = True
+    notif.save(update_fields=['lu'])
+
+    return redirect(notif.link)

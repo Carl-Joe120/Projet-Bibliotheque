@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --surface: #ffffff;
+        --surface-strong: #f5f7ff;
+        --text-default: #17253d;
+        --text-muted: #6e7c98;
+        --border: #e9ecf8;
+    }
+
+    body {
+        background: linear-gradient(180deg, #f7f9ff 0%, #ffffff 100%);
+    }
+
+    .add-user-page {
+        min-height: 100vh;
+        padding: 2.5rem 1.5rem;
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2.4rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.4rem;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .breadcrumb-custom li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-custom li:not(:last-child)::after {
+        content: '/';
+        color: #c5cee7;
+    }
+
+    .breadcrumb-custom a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .breadcrumb-custom .active {
+        color: var(--text-default);
+        font-weight: 700;
+    }
+
+    .form-card {
+        background: var(--surface);
+        border-radius: 22px;
+        border: 1px solid var(--border);
+        box-shadow: 0 20px 60px rgba(103, 114, 233, 0.08);
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.12) 100%);
+        border-bottom: 1px solid rgba(233,236,248,0.9);
+    }
+
+    .form-card-header h2 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--text-default);
+        margin: 0;
+    }
+
+    .form-card-body {
+        padding: 2rem;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.75rem;
+        font-size: 0.95rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--text-default);
+    }
+
+    .section-title span {
+        display: inline-flex;
+        width: 48px;
+        height: 48px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        background: var(--surface-strong);
+        color: #667eea;
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.12);
+    }
+
+    .input-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.5rem;
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .field-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+    }
+
+    .field-label span {
+        color: #dc3545;
+        margin-left: 0.25rem;
+    }
+
+    .form-control,
+    .form-control:focus,
+    .form-control:active,
+    select,
+    textarea,
+    input[type="file"] {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        padding: 0.95rem 1.15rem;
+        font-size: 0.95rem;
+        color: var(--text-default);
+        background: #ffffff;
+        transition: all 0.3s ease;
+        box-shadow: none;
+    }
+
+    .form-control:focus,
+    select:focus,
+    textarea:focus,
+    input[type="file"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    input[type="file"] {
+        padding: 0.9rem 1rem;
+        background: #f8f9ff;
+    }
+
+    .divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #667eea, transparent);
+        margin: 2rem 0;
+    }
+
+    .button-row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+    }
+
+    .btn-clear,
+    .btn-submit {
+        border-radius: 14px;
+        padding: 0.95rem 1.7rem;
+        font-weight: 700;
+        letter-spacing: 0.7px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-clear {
+        background: #f1f4ff;
+        color: #4e5d8c;
+    }
+
+    .btn-clear:hover {
+        background: #e7ecff;
+        transform: translateY(-2px);
+    }
+
+    .btn-submit {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 991px) {
+        .input-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="add-user-page">
+    <div class="container-fluid px-4">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Ajouter un utilisateur</h1>
+                <p class="page-subtitle"><i class="fas fa-user-plus"></i> Créez un compte administrateur ou membre avec un seul formulaire.</p>
+            </div>
+            <ol class="breadcrumb-custom">
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Administration</a></li>
+                <li class="active">Nouvel utilisateur</li>
+            </ol>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>Informations du compte</h2>
+            </div>
+            <div class="form-card-body">
+                <div class="section-title">
+                    <span><i class="fas fa-user-circle"></i></span>
+                    Détails du nouveau compte
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="input-grid">
+                        <div class="field-group">
+                            <label class="field-label">Nom d'utilisateur <span>*</span></label>
+                            {{ form.username }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Prénom</label>
+                            {{ form.first_name }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Nom</label>
+                            {{ form.last_name }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Email <span>*</span></label>
+                            {{ form.email }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Rôle</label>
+                            {{ form.role }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Téléphone</label>
+                            {{ form.telephone }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Adresse</label>
+                            {{ form.adresse }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Date de naissance</label>
+                            {{ form.date_de_naissance }}
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Photo de profil</label>
+                            {{ form.photo_profil }}
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="section-title">
+                        <span><i class="fas fa-lock"></i></span>
+                        Sécurité et accès
+                    </div>
+
+                    <div class="input-grid">
+                        <div class="field-group">
+                            <label class="field-label">Mot de passe <span>*</span></label>
+                            {{ form.password1 }}
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Confirmation <span>*</span></label>
+                            {{ form.password2 }}
+                        </div>
+                    </div>
+
+                    <div class="button-row">
+                        <a href="{% url 'liste_membres_admin' %}" class="btn-clear">Annuler</a>
+                        <button type="submit" class="btn-submit">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

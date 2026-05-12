@@ -1,0 +1,421 @@
+﻿{% extends "base.html" %}
+{% block content %}
+
+<style>
+.objectives-page {
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+}
+.objectives-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+.objectives-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+.objectives-header p {
+    font-size: 1.1rem;
+    color: #64748b;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.main-objective-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 3rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+.main-objective-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8, #7c3aed);
+}
+.objective-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+.objective-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+.objective-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+.objective-form {
+    margin-bottom: 2.5rem;
+}
+.objective-input-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.objective-input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    transition: all 0.3s ease;
+}
+.objective-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.objective-btn {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border: none;
+    border-radius: 1rem;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+.objective-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+.objective-help {
+    color: #64748b;
+    font-size: 0.95rem;
+    font-style: italic;
+}
+.progress-section {
+    margin-top: 2rem;
+}
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.progress-stats {
+    display: flex;
+    gap: 2rem;
+}
+.progress-stat {
+    text-align: center;
+}
+.progress-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    display: block;
+}
+.progress-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.progress-container {
+    position: relative;
+    height: 30px;
+    background: #f1f5f9;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.progress-bar-custom {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669, #047857);
+    border-radius: 15px;
+    transition: width 1s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+.progress-bar-custom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+.progress-percentage {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.tips-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+.tips-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.tips-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.3rem;
+}
+.tips-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+.tip-item {
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border-left: 4px solid #f59e0b;
+    transition: all 0.3s ease;
+}
+.tip-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+    background: #fef3c7;
+}
+.tip-icon {
+    color: #f59e0b;
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+}
+.tip-content {
+    color: #374151;
+    font-weight: 500;
+    line-height: 1.5;
+}
+.motivation-card {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+.motivation-quote {
+    font-size: 1.3rem;
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+.motivation-author {
+    text-align: center;
+    font-weight: 600;
+    opacity: 0.7;
+}
+@media (max-width: 768px) {
+    .objectives-header h1 {
+        font-size: 2rem;
+    }
+    .main-objective-card {
+        padding: 2rem;
+    }
+    .objective-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    .objective-input-group {
+        flex-direction: column;
+    }
+    .progress-stats {
+        justify-content: center;
+    }
+    .tips-card {
+        padding: 2rem;
+    }
+}
+</style>
+
+<div class="container-fluid objectives-page">
+    <div class="container">
+
+        <!-- Header Section -->
+        <div class="objectives-header">
+            <h1>🎯 Objectifs de Lecture</h1>
+            <p>Définissez vos objectifs annuels et suivez votre progression vers une lecture enrichissante</p>
+        </div>
+
+        <!-- Main Objective Card -->
+        <div class="main-objective-card">
+            <div class="objective-header">
+                <h2 class="objective-title">Mon objectif annuel</h2>
+                <div class="objective-icon">📚</div>
+            </div>
+
+            <form method="POST" class="objective-form">
+                {% csrf_token %}
+                <div class="objective-input-group">
+                    <input type="number" min="1" max="365" class="objective-input"
+                           name="objectif" value="{{ objectif }}"
+                           placeholder="Ex: 12, 24, 50...">
+                    <button type="submit" class="objective-btn">💾 Enregistrer</button>
+                </div>
+                <p class="objective-help">Définissez le nombre de livres que vous souhaitez lire cette année</p>
+            </form>
+
+            <!-- Progress Section -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <div class="progress-stats">
+                        <div class="progress-stat">
+                            <span class="progress-value">{{ total_lus }}</span>
+                            <span class="progress-label">Déjà empruntés</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-value">{{ objectif }}</span>
+                            <span class="progress-label">Objectif</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-value">{{ restant }}</span>
+                            <span class="progress-label">Restant</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar-custom" style="width: {{ progression }}%;">
+                        <span class="progress-percentage">{{ progression }}%</span>
+                    </div>
+                </div>
+
+                {% if progression >= 100 %}
+                    <div class="alert alert-success mt-3" style="border-radius: 1rem;">
+                        <strong>🎉 Félicitations !</strong> Vous avez dépassé votre objectif annuel !
+                    </div>
+                {% elif progression >= 75 %}
+                    <div class="alert alert-info mt-3" style="border-radius: 1rem;">
+                        <strong>🚀 Excellent progrès !</strong> Vous êtes sur la bonne voie !
+                    </div>
+                {% elif progression >= 50 %}
+                    <div class="alert alert-warning mt-3" style="border-radius: 1rem;">
+                        <strong>📈 Bon rythme !</strong> Continuez comme ça !
+                    </div>
+                {% else %}
+                    <div class="alert alert-light mt-3" style="border-radius: 1rem; border: 1px solid #e2e8f0;">
+                        <strong>🌱 Commencez votre aventure !</strong> Chaque livre compte.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="tips-card">
+            <div class="tips-header">
+                <div class="tips-icon">💡</div>
+                <h3 class="tips-title">Conseils pour réussir vos objectifs</h3>
+            </div>
+
+            <div class="tips-grid">
+                <div class="tip-item">
+                    <div class="tip-content">
+                        <span class="tip-icon">📅</span>
+                        <strong>Planifiez vos lectures</strong><br>
+                        Définissez des objectifs mensuels réalistes pour maintenir votre motivation.
+                    </div>
+                </div>
+
+                <div class="tip-item">
+                    <div class="tip-content">
+                        <span class="tip-icon">📝</span>
+                        <strong>Tenez un journal</strong><br>
+                        Notez vos impressions de lecture pour enrichir votre expérience.
+                    </div>
+                </div>
+
+                <div class="tip-item">
+                    <div class="tip-content">
+                        <span class="tip-icon">🎧</span>
+                        <strong>Variez les formats</strong><br>
+                        Livres papier, numérique, audio - trouvez ce qui vous convient.
+                    </div>
+                </div>
+
+                <div class="tip-item">
+                    <div class="tip-content">
+                        <span class="tip-icon">👥</span>
+                        <strong>Partagez vos lectures</strong><br>
+                        Discutez avec d'autres lecteurs pour découvrir de nouveaux horizons.
+                    </div>
+                </div>
+
+                <div class="tip-item">
+                    <div class="tip-content">
+                        <span class="tip-icon">⏰</span>
+                        <strong>Créez une routine</strong><br>
+                        Consacrez du temps régulier à la lecture, même 15 minutes par jour.
+                    </div>
+                </div>
+
+                <div class="tip-item">
+                    <div class="tip-content">
+                        <span class="tip-icon">🎯</span>
+                        <strong>Célébrez vos victoires</strong><br>
+                        Récompensez-vous à chaque objectif atteint, même les petits.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Motivation Card -->
+        <div class="motivation-card">
+            <blockquote class="motivation-quote">
+                "Un lecteur vit mille vies avant de mourir. Celui qui ne lit jamais n'en vit qu'une."
+            </blockquote>
+            <cite class="motivation-author">— George R.R. Martin</cite>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

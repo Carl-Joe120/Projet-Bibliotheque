@@ -1,0 +1,103 @@
+﻿{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <div>
+            <span class="badge bg-primary bg-opacity-10 text-primary mb-2">Historique</span>
+            <h1 class="h3 fw-bold mb-1">Historique de vos emprunts</h1>
+            <p class="text-secondary mb-0">Une vue claire et moderne de tous vos prêts, avec dates et statuts.</p>
+        </div>
+        <div class="text-md-end">
+            <p class="text-secondary small mb-1">Total des emprunts</p>
+            <h2 class="h4 fw-bold mb-0">{{ emprunts|length }}</h2>
+        </div>
+    </div>
+
+    {% if emprunts %}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white border-0 py-4 px-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start align-items-md-center">
+                <div>
+                    <h2 class="h5 fw-semibold mb-1">Liste des emprunts</h2>
+                    <p class="text-secondary mb-0">Retrouvez l’historique de vos livres empruntés, ordre chronologique.</p>
+                </div>
+                <div class="text-secondary small">
+                    <span class="me-3">Dernier prêt : {{ emprunts.0.date_emprunt|date:'d M Y' }}</span>
+                    <span>Statut actuel disponible</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-borderless table-hover align-middle mb-0 history-table">
+                <thead class="bg-light">
+                    <tr class="text-secondary text-uppercase small letter-spacing-1">
+                        <th class="py-3">Livre</th>
+                        <th class="py-3">Auteur</th>
+                        <th class="py-3">Date de prêt</th>
+                        <th class="py-3">Retour prévu</th>
+                        <th class="py-3 text-end">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in emprunts %}
+                    <tr class="border-top {% if e.statut == 'en_cours' %}table-warning{% else %}table-success{% endif %} {% if forloop.counter|divisibleby:2 %}table-light{% endif %}">
+                        <td class="py-3">
+                            <div class="fw-semibold text-dark">{{ e.livre.titre }}</div>
+                        </td>
+                        <td class="py-3 text-secondary small">{{ e.livre.auteur }}</td>
+                        <td class="py-3 text-secondary">{{ e.date_emprunt|date:'d M Y' }}</td>
+                        <td class="py-3 text-secondary">{{ e.date_retour_prevu|date:'d M Y' }}</td>
+                        <td class="py-3 text-end">
+                            {% if e.statut == "en_cours" %}
+                                <span class="badge rounded-pill bg-warning text-dark py-2 px-3">En cours</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-success text-white py-2 px-3">Retourné</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 py-5 px-4 text-center">
+        <span class="badge bg-secondary bg-opacity-10 text-secondary mb-3">Aucun emprunt</span>
+        <h2 class="h5 fw-semibold mb-2">Vous n’avez aucun historique d’emprunts.</h2>
+        <p class="text-secondary mb-3">Lorsque vous emprunterez un livre, il apparaîtra automatiquement dans cet historique.</p>
+        <a href="/" class="btn btn-outline-primary btn-sm">Retour à l'accueil</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.history-table tbody tr:hover {
+    background: rgba(13, 110, 253, 0.12) !important;
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+.history-table th {
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+.history-table td {
+    vertical-align: middle;
+    transition: all 0.2s ease;
+}
+.history-table tbody tr:nth-child(even) {
+    background-color: rgba(248, 249, 250, 0.5);
+}
+.history-table tbody tr.table-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+.history-table tbody tr.table-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+.letter-spacing-1 {
+    letter-spacing: 0.08em;
+}
+</style>
+
+{% endblock %}

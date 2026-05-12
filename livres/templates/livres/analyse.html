@@ -1,0 +1,861 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analyse de Lecture{% endblock %}
+
+{% block content %}
+
+<style>
+    * { box-sizing: border-box; }
+
+    .analyse-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    /* ============ HEADER SECTION ============ */
+    .header-section {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        padding: 3.5rem 2rem;
+        border-radius: 18px;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+    }
+
+    .header-section::before {
+        content: '';
+        position: absolute;
+        top: -40%;
+        right: -20%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    .header-section::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(20px); }
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .header-text h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+
+    .header-text p {
+        font-size: 1.15rem;
+        opacity: 0.92;
+        font-weight: 500;
+    }
+
+    .header-icon {
+        font-size: 5rem;
+        opacity: 0.15;
+        animation: pulse-slow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-slow {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    /* ============ STAT CARDS ============ */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 14px;
+        padding: 2.2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border-left: 5px solid;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255, 0.3), transparent);
+        transition: right 0.6s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px) scale(1.01);
+        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.18);
+    }
+
+    .stat-card:hover::after {
+        right: 100%;
+    }
+
+    .stat-card.total { border-left-color: #6366f1; }
+    .stat-card.categories { border-left-color: #10b981; }
+    .stat-card.progress { border-left-color: #f59e0b; }
+    .stat-card.trends { border-left-color: #8b5cf6; }
+
+    .stat-icon {
+        width: 65px;
+        height: 65px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-card.total .stat-icon {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+    }
+
+    .stat-card.categories .stat-icon {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .stat-card.progress .stat-icon {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .stat-card.trends .stat-icon {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .stat-value {
+        font-size: 2.8rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 1rem 0 0.5rem 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-label {
+        font-size: 0.95rem;
+        color: #64748b;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ============ CHART CARDS ============ */
+    .charts-section {
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2.5rem;
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+        box-shadow: 0 12px 35px rgba(99, 102, 241, 0.12);
+    }
+
+    .chart-header {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        padding: 2.2rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .chart-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.25);
+        flex-shrink: 0;
+    }
+
+    .chart-info h3 {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 0.3rem 0;
+    }
+
+    .chart-info p {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .chart-body {
+        padding: 2.2rem;
+        position: relative;
+    }
+
+    /* ============ METRICS GRID ============ */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.2rem;
+        margin-top: 1.5rem;
+    }
+
+    .metric-item {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        padding: 1.5rem;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .metric-item:hover {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+    }
+
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 900;
+        display: block;
+        color: #0f172a;
+    }
+
+    .metric-item:hover .metric-value {
+        color: white;
+    }
+
+    .metric-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 0.75rem;
+    }
+
+    .metric-item:hover .metric-label {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* ============ INSIGHTS SECTION ============ */
+    .insights-section {
+        margin-bottom: 2rem;
+    }
+
+    .insights-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .insights-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+
+    .insights-subtitle {
+        color: #64748b;
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .insight-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid #f1f5f9;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+    }
+
+    .insight-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 40px rgba(99, 102, 241, 0.15);
+        border-color: #6366f1;
+    }
+
+    .insight-header {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        padding: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+    }
+
+    .insight-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .insight-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .insight-body {
+        padding: 2rem;
+    }
+
+    .insight-content {
+        color: #475569;
+        line-height: 1.7;
+        margin-bottom: 1.2rem;
+    }
+
+    .insight-content p {
+        margin: 0 0 1rem 0;
+    }
+
+    .insight-content strong {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .insight-highlight {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(79, 70, 229, 0.04));
+        padding: 1.2rem;
+        border-radius: 10px;
+        border-left: 4px solid #6366f1;
+        margin-top: 1.2rem;
+    }
+
+    .insight-highlight strong {
+        color: #4f46e5;
+        font-weight: 700;
+    }
+
+    /* ============ ALERTS ============ */
+    .alert-custom {
+        border: none;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border-left: 5px solid;
+    }
+
+    .alert-info {
+        border-left-color: #3b82f6;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(29, 78, 216, 0.04));
+    }
+
+    .alert-warning {
+        border-left-color: #f59e0b;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.04));
+    }
+
+    .alert-success {
+        border-left-color: #10b981;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.04));
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 1024px) {
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .header-text h1 {
+            font-size: 2.3rem;
+        }
+
+        .stats-grid {
+            gap: 1.5rem;
+        }
+
+        .insights-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .analyse-container {
+            padding: 1rem 0;
+        }
+
+        .header-section {
+            padding: 2.5rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+        }
+
+        .header-text h1 {
+            font-size: 2rem;
+        }
+
+        .header-text p {
+            font-size: 1rem;
+        }
+
+        .header-icon {
+            font-size: 3.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+        }
+
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .chart-header {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .chart-info h3 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+<div class="analyse-container">
+    <div class="container-fluid px-4">
+
+        <!-- ========== HEADER SECTION ========== -->
+        <div class="header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>📊 Analyse de Lecture</h1>
+                    <p>Tableau de bord personnel de vos habitudes de lecture</p>
+                </div>
+                <div class="header-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ALERTS/MESSAGES ========== -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible alert-custom fade show" role="alert">
+                    <strong><i class="fas fa-info-circle me-2"></i></strong>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- ========== STATISTICS CARDS ========== -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-value">{% if total %}{{ total }}{% else %}0{% endif %}</div>
+                <div class="stat-label">Livres empruntés</div>
+            </div>
+
+            <div class="stat-card categories">
+                <div class="stat-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stat-value">{% if categories_count %}{{ categories_count }}{% else %}0{% endif %}</div>
+                <div class="stat-label">Catégories explorées</div>
+            </div>
+
+            <div class="stat-card progress">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-value">{% if monthly_avg %}{{ monthly_avg }}{% else %}0{% endif %}</div>
+                <div class="stat-label">Moyenne mensuelle</div>
+            </div>
+
+            <div class="stat-card trends">
+                <div class="stat-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div class="stat-value">{% if emprunt_actif %}{{ emprunt_actif }}{% else %}0{% endif %}</div>
+                <div class="stat-label">Emprunts actifs</div>
+            </div>
+        </div>
+
+        <!-- ========== CHARTS SECTION ========== -->
+        <div class="charts-section">
+            <!-- Monthly Evolution Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="chart-info">
+                        <h3>Évolution des Emprunts</h3>
+                        <p>Suivi mensuel de l'activité d'emprunt</p>
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="monthlyChart" height="80"></canvas>
+                </div>
+            </div>
+
+            <!-- Categories Distribution Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="chart-info">
+                        <h3>Répartition par Catégories</h3>
+                        <p>Popularité des différentes catégories de livres</p>
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="categoriesChart" height="80"></canvas>
+                </div>
+            </div>
+
+            <!-- Monthly Metrics Cards -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="chart-info">
+                        <h3>Statistiques Personnelles</h3>
+                        <p>Aperçu de vos habitudes de lecture</p>
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <span class="metric-value">{% if emprunts_mois %}{{ emprunts_mois }}{% else %}0{% endif %}</span>
+                            <span class="metric-label">Emprunts ce mois</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">{% if retours_mois %}{{ retours_mois }}{% else %}0{% endif %}</span>
+                            <span class="metric-label">Retours ce mois</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">{% if retards_actuels %}{{ retards_actuels }}{% else %}0{% endif %}</span>
+                            <span class="metric-label">Retards actifs</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">{% if current_streak %}{{ current_streak }}{% else %}0{% endif %}</span>
+                            <span class="metric-label">Série active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== INSIGHTS SECTION ========== -->
+        <div class="insights-section">
+            <div class="insights-header">
+                <h2 class="insights-title">🔍 Vos Analyses Personnelles</h2>
+                <p class="insights-subtitle">Recommandations personnalisées basées sur vos données de lecture</p>
+            </div>
+
+            <div class="insights-grid">
+                <!-- Performance Card -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h4 class="insight-title">Votre Performance</h4>
+                    </div>
+                    <div class="insight-body">
+                        <div class="insight-content">
+                            <p>Vous avez emprunté <strong>{% if total %}{{ total }}{% else %}0{% endif %}</strong> livres au total,
+                            explorant <strong>{% if categories_count %}{{ categories_count }}{% else %}0{% endif %}</strong> catégories différentes.</p>
+
+                            {% if monthly_avg and monthly_avg > 2 %}
+                                <p><strong>✓ Excellente régularité !</strong> Votre moyenne mensuelle de {{ monthly_avg }} emprunts montre un engagement constant.</p>
+                            {% elif monthly_avg and monthly_avg > 1 %}
+                                <p><strong>✓ Bonne dynamique.</strong> Vous lisez régulièrement avec une moyenne de {{ monthly_avg }} emprunts par mois.</p>
+                            {% else %}
+                                <p><strong>→ Opportunité d'augmenter.</strong> Pensez à emprunter plus régulièrement pour enrichir vos habitudes de lecture.</p>
+                            {% endif %}
+                        </div>
+                        <div class="insight-highlight">
+                            <strong>💡 Conseil personnalisé :</strong><br>
+                            {% if categories_count and categories_count > 5 %}
+                                Continuez à diversifier vos lectures dans différentes catégories.
+                            {% else %}
+                                Découvrez de nouvelles catégories pour élargir vos horizons littéraires.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reading Habits Card -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4 class="insight-title">Vos Habitudes de Lecture</h4>
+                    </div>
+                    <div class="insight-body">
+                        <div class="insight-content">
+                            <p>Ce mois-ci, vous avez effectué <strong>{% if emprunts_mois %}{{ emprunts_mois }}{% else %}0{% endif %}</strong> emprunts
+                            et <strong>{% if retours_mois %}{{ retours_mois }}{% else %}0{% endif %}</strong> retours ont été enregistrés.</p>
+
+                            {% if emprunts_mois and emprunts_mois > 3 %}
+                                <p><strong>✓ Excellente activité !</strong> Vous êtes très actif ce mois-ci avec de nombreux emprunts.</p>
+                            {% elif emprunts_mois and emprunts_mois > 1 %}
+                                <p><strong>✓ Bonne dynamique.</strong> Vous maintenez une activité régulière ce mois-ci.</p>
+                            {% else %}
+                                <p><strong>→ Opportunité d'augmenter.</strong> Pensez à emprunter plus de livres ce mois-ci.</p>
+                            {% endif %}
+                        </div>
+                        <div class="insight-highlight">
+                            <strong>💡 Conseil :</strong><br>
+                            {% if retards_actuels and retards_actuels > 0 %}
+                                Pensez à retourner vos livres en retard pour éviter les pénalités.
+                            {% else %}
+                                Continuez votre belle activité de lecture !
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories Exploration Card -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-compass"></i>
+                        </div>
+                        <h4 class="insight-title">Exploration des Catégories</h4>
+                    </div>
+                    <div class="insight-body">
+                        <div class="insight-content">
+                            <p>Vous avez exploré <strong>{% if categories_count %}{{ categories_count }}{% else %}0{% endif %}</strong> catégories littéraires différentes.</p>
+
+                            {% if categories_count and categories_count > 8 %}
+                                <p><strong>✓ Explorateur averti !</strong> Votre diversité de lecture est remarquable.</p>
+                            {% elif categories_count and categories_count > 4 %}
+                                <p><strong>✓ Bonne variété.</strong> Vous explorez plusieurs genres littéraires.</p>
+                            {% else %}
+                                <p><strong>→ Élargissez vos horizons.</strong> Découvrez de nouveaux genres pour enrichir votre culture.</p>
+                            {% endif %}
+                        </div>
+                        <div class="insight-highlight">
+                            <strong>💡 Suggestion :</strong><br>
+                            {% if categories_count and categories_count < 5 %}
+                                Essayez une nouvelle catégorie ce mois-ci pour diversifier vos lectures.
+                            {% else %}
+                                Continuez à explorer et partagez vos découvertes avec d'autres membres.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reading Goals Card -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-target"></i>
+                        </div>
+                        <h4 class="insight-title">Objectifs de Lecture</h4>
+                    </div>
+                    <div class="insight-body">
+                        <div class="insight-content">
+                            <p>Votre objectif annuel est de lire <strong>12 livres</strong> cette année.</p>
+
+                            {% if total and total >= 12 %}
+                                <p><strong>✓ Objectif atteint !</strong> Vous avez déjà dépassé votre objectif annuel avec {{ total }} emprunts.</p>
+                            {% elif total and total > 6 %}
+                                <p><strong>→ En bonne voie.</strong> Avec {{ total }} emprunts, vous progressez vers votre objectif.</p>
+                            {% else %}
+                                <p><strong>→ À accélérer.</strong> Il vous reste du chemin pour atteindre vos 12 livres annuels.</p>
+                            {% endif %}
+                        </div>
+                        <div class="insight-highlight">
+                            <strong>💡 Motivation :</strong><br>
+                            {% if total and total < 12 %}
+                                Plus que {{ reste_objectif }} emprunts pour atteindre votre objectif annuel !
+                            {% else %}
+                                Félicitations ! Pensez à fixer un nouvel objectif plus ambitieux.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+<script>
+    // Monthly Loans Chart
+    const monthlyCtx = document.getElementById('monthlyChart');
+    if (monthlyCtx) {
+        new Chart(monthlyCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ labels|safe|default:"[]" }},
+                datasets: [{
+                    label: 'Emprunts mensuels',
+                    data: {{ data|safe|default:"[]" }},
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#4f46e5'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        cornerRadius: 8,
+                        displayColors: false,
+                        padding: 12
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { color: '#64748b', font: { weight: '600' } }
+                    },
+                    x: {
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { color: '#64748b', font: { weight: '600' } }
+                    }
+                },
+                interaction: { intersect: false, mode: 'index' }
+            }
+        });
+    }
+
+    // Categories Distribution Chart
+    const categoriesCtx = document.getElementById('categoriesChart');
+    if (categoriesCtx) {
+        new Chart(categoriesCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ categories_labels|safe|default:"[]" }},
+                datasets: [{
+                    data: {{ categories_data|safe|default:"[]" }},
+                    backgroundColor: [
+                        '#6366f1', '#10b981', '#f59e0b', '#8b5cf6',
+                        '#ef4444', '#06b6d4', '#84cc16', '#f97316',
+                        '#ec4899', '#3b82f6', '#059669', '#d97706'
+                    ],
+                    borderWidth: 0,
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            color: '#64748b',
+                            font: { weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        cornerRadius: 8,
+                        padding: 12
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+</script>
+
+{% endblock %}

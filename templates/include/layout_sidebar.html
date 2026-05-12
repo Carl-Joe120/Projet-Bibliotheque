@@ -1,200 +1,259 @@
 <div id="layoutSidenav_nav">
-    <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+    <nav class="sb-sidenav accordion sb-sidenav-blue" id="sidenavAccordion">
 
         <div class="sb-sidenav-menu">
             <div class="nav">
 
-                {% if user.role == 'membre' %}
-                <!-- ==================== MENU MEMBRE ==================== -->
+{% if user.role == 'membre' %}
 
-                <div class="sb-sidenav-menu-heading">Core</div>
+    <div class="sb-sidenav-menu-heading">Cœur du système</div>
 
-                <a class="nav-link" href="{% url 'redirect_to_membre' %}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                    Dashboard Membre
-                </a>
+<a class="nav-link" href="{% url 'redirect_to_membre' %}">
+    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+    Tableau de bord
+</a>
 
-                <div class="sb-sidenav-menu-heading">Interface</div>
+<div class="sb-sidenav-menu-heading">Ma Bibliothèque</div>
 
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
-                    aria-expanded="false" aria-controls="collapseLayouts">
-                    <div class="sb-nav-link-icon"><i class="fas fa-compass"></i></div>
-                    Navigation Simplifiée
-                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                </a>
+<a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+    aria-expanded="false" aria-controls="collapseLayouts">
+    <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
+    Ma Bibliotheque
+    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+</a>
 
-                <div class="collapse" id="collapseLayouts" data-bs-parent="#sidenavAccordion">
-                    <nav class="sb-sidenav-menu-nested nav">
-                        <a class="nav-link" href="{% url 'livre_empruntes' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-book-reader"></i></div>
-                            Livres empruntés
-                        </a>
+<div class="collapse" id="collapseLayouts" data-bs-parent="#sidenavAccordion">
+    <nav class="sb-sidenav-menu-nested nav">
+        <a class="nav-link" href="{% url 'livre_empruntes_membres' %}">
+            <div class="sb-nav-link-icon"><i class="fas fa-book-reader"></i></div>
+            Livres empruntés
+        </a>
 
-                        <a class="nav-link" href="{% url 'afficher_page_reservation' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
-                            Réserver un livre
-                        </a>
+        <a class="nav-link" href="{% url 'afficher_page_reservation' %}">
+            <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
+            Liste des ouvrages
+        </a>
 
-                        <a class="nav-link" href="#">
-                            <div class="sb-nav-link-icon"><i class="fas fa-star"></i></div>
-                            Recommandations
-                        </a>
+        <a class="nav-link" href="{% url 'historique_emprunt_membre' %}">
+            <div class="sb-nav-link-icon"><i class="fas fa-history"></i></div>
+            Historique d'emprunts
+        </a>
 
-                        <a class="nav-link" href="#">
-                            <div class="sb-nav-link-icon"><i class="fas fa-id-card"></i></div>
-                            Profil utilisateur
-                        </a>
-                    </nav>
-                </div>
+        <a class="nav-link" href="{% url 'mes_favoris' %}">
+            <div class="sb-nav-link-icon"><i class="fas fa-heart"></i></div>
+            Mes Favoris
+        </a>
+    </nav>
+</div>
 
+<div class="sb-sidenav-menu-heading">Mon Profil</div>
 
-                <!-- Pages -->
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
-                    aria-expanded="false" aria-controls="collapsePages">
-                    <div class="sb-nav-link-icon"><i class="fas fa-files"></i></div>
-                    Pages
-                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                </a>
+<a class="nav-link" href="{% url 'profil_membre' %}">
+    <div class="sb-nav-link-icon"><i class="fas fa-user-circle"></i></div>
+    Informations Personnelles 
+</a>
 
-                <div class="collapse" id="collapsePages" data-bs-parent="#sidenavAccordion">
-                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+<!--
 
-                        <!-- Authentication -->
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                            data-bs-target="#pagesCollapseAuth" aria-expanded="false"
-                            aria-controls="pagesCollapseAuth">
-                            Authentication
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
+<a class="nav-link" href="#">
+    <div class="sb-nav-link-icon"><i class="fas fa-id-card"></i></div>
+    Ma carte Membre
+</a>
 
-                        <div class="collapse" id="pagesCollapseAuth" data-bs-parent="#sidenavAccordionPages">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="login.html">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i> Connexion
-                                </a>
-                                <a class="nav-link" href="login.html">
-                                    <i class="bi bi-person-plus me-2"></i> Inscription
-                                </a>
-                                <a class="nav-link" href="login.html">
-                                    <i class="bi bi-key me-2"></i> Mot de passe oublié
-                                </a>
-                            </nav>
-                        </div>
+-->
 
-                        <!-- Erreur pages -->
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                            data-bs-target="#pagesCollapseError" aria-expanded="false"
-                            aria-controls="pagesCollapseError">
-                            <div class="sb-nav-link-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                            Erreurs
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
+<div class="sb-sidenav-menu-heading">Activités & Stats</div>
 
-                        <div class="collapse" id="pagesCollapseError" data-bs-parent="#sidenavAccordionPages">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="401.html">
-                                    <i class="fas fa-shield-lock me-2"></i> Page 401 - Non autorisé
-                                </a>
-                                <a class="nav-link" href="404.html">
-                                    <i class="fas fa-search me-2"></i> Page 404 - Introuvable
-                                </a>
-                                <a class="nav-link" href="500.html">
-                                    <i class="fas fa-bug me-2"></i> Page 500 - Erreur serveur
-                                </a>
-                            </nav>
-                        </div>
+<a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
+    data-bs-target="#collapseFonctionnalites" aria-expanded="false"
+    aria-controls="collapseFonctionnalites">
+    <div class="sb-nav-link-icon"><i class="bi bi-bar-chart-line"></i></div>
+    Mes Statistiques
+    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+</a>
 
-                    </nav>
-                </div>
+<div class="collapse" id="collapseFonctionnalites" data-bs-parent="#sidenavAccordion">
+    <nav class="sb-sidenav-menu-nested nav">
+        <a class="nav-link" href="{% url 'analyse_lecture' %}">
+            <i class="bi bi-graph-up me-2"></i> Analyse de lecture
+        </a>
+        <a class="nav-link" href="{% url 'objectifs_annuels' %}">
+            <i class="bi bi-bullseye me-2"></i> Objectifs annuels
+        </a>
+    </nav>
+</div>
 
-                <!-- Fonctionnalités -->
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                    data-bs-target="#collapseFonctionnalites" aria-expanded="false"
-                    aria-controls="collapseFonctionnalites">
-                    <div class="sb-nav-link-icon"><i class="bi bi-puzzle"></i></div>
-                    Fonctionnalités
-                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                </a>
+{% endif %}                
+{% if user.role == 'secretaire' %}
 
-                <div class="collapse" id="collapseFonctionnalites" data-bs-parent="#sidenavAccordion">
-                    <nav class="sb-sidenav-menu-nested nav">
+<!-- ================= DASHBOARD ================= -->
+<div class="sb-sidenav-menu-heading">Dashboard Secrétaire</div>
 
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-bar-chart-line me-2"></i> Statistiques de lecture
-                        </a>
+<a class="nav-link" href="{% url 'redirect_to_secretaire' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-tachometer-alt"></i>
+    </div>
+    Tableau de bord
+</a>
 
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-journal-text me-2"></i> Historique des emprunts
-                        </a>
+<!-- ================= GESTION BIBLIOTHÈQUE ================= -->
+<div class="sb-sidenav-menu-heading">Gestion bibliothécaire</div>
 
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-bullseye me-2"></i> Objectifs de lecture
-                        </a>
+<a class="nav-link" href="{% url 'liste_reservations' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-calendar-check"></i>
+    </div>
+    Réservations
+</a>
 
-                    </nav>
-                </div>
+<a class="nav-link" href="{% url 'liste_emprunts_en_cours_secretaire' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-book-reader"></i>
+    </div>
+    Emprunts en cours
+</a>
 
-                {% endif %}
+<a class="nav-link" href="{% url 'gestion_des_retours' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-history"></i>
+    </div>
+    Gestion des Retours
+</a>
 
-                {% if user.role == 'secretaire' %}
-                <!-- ==================== MENU SECRETAIRE ==================== -->
+<!-- ================= GESTION DES LIVRES ================= -->
+<div class="sb-sidenav-menu-heading">Gestion des livres</div>
 
-                <div class="sb-sidenav-menu-heading">Gestion</div>
+<a class="nav-link" href="{% url 'liste_livres_secretaire' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-book"></i>
+    </div>
+    Liste des livres
+</a>
 
-                <a class="nav-link" href="{% url 'redirect_to_secretaire' %}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-home"></i></div>
-                    Tableau de bord
-                </a>
+<a class="nav-link" href="{% url 'ajouter_livre' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-plus-circle"></i>
+    </div>
+    Ajouter un livre
+</a>
 
-                <!-- Reservations & Emprunts -->
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                    data-bs-target="#collapseReservations" aria-expanded="false"
-                    aria-controls="collapseReservations">
-                    <div class="sb-nav-link-icon"><i class="fas fa-calendar-alt"></i></div>
-                    Réservations & Emprunts
-                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                </a>
+<!-- ================= CONTRÔLE ================= -->
+<div class="sb-sidenav-menu-heading">Contrôle</div>
 
-                <div class="collapse" id="collapseReservations" data-bs-parent="#sidenavAccordion">
-                    <nav class="sb-sidenav-menu-nested nav">
-                        <a class="nav-link" href="{% url 'liste_reservations' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-book-reader"></i></div>
-                            Gestion des réservations
-                        </a>
-                        <a class="nav-link" href="{% url 'gestion_emprunts' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
-                            Gestion des emprunts
-                        </a>
-                        <a class="nav-link" href="{% url 'gestion_retours' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-undo"></i></div>
-                            Retour des livres
-                        </a>
-                    </nav>
-                </div>
+<a class="nav-link" href="{% url 'gestion_retards_par_secretaire' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-clock"></i>
+    </div>
+    Emprunts en retard
+</a>
 
-                <!-- Retards & Amendes -->
-                <a class="nav-link" href="{% url 'gestion_retards' %}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-clock"></i></div>
-                    Retards & Amendes
-                </a>
+<!-- ================= MEMBRES ================= -->
+<div class="sb-sidenav-menu-heading">Gestion des membres</div>
 
-                <!-- Membres -->
-                <a class="nav-link" href="{% url 'gestion_membres' %}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                    Gestion des membres
-                </a>
+<a class="nav-link" href="{% url 'gestion_membres' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-users"></i>
+    </div>
+    Liste des membres
+</a>
 
-                <div class="sb-sidenav-menu-heading">Compte</div>
+<!-- ================= STATISTIQUES ================= -->
+<div class="sb-sidenav-menu-heading">Statistiques</div>
 
-                <a class="nav-link" href="{% url 'profil_secretaire' %}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-id-card"></i></div>
-                    Profil utilisateur
-                </a>
+<a class="nav-link" href="{% url 'analyse_rapports' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    Analyse & Rapports
+</a>
 
-                {% endif %}
+<!-- ================= COMPTE ================= -->
+<div class="sb-sidenav-menu-heading">Compte</div>
 
-            </div> <!-- END .nav -->
-        </div> <!-- END .sb-sidenav-menu -->
+<a class="nav-link" href="{% url 'profil_secretaire' %}">
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-id-card"></i>
+    </div>
+    Profil
+</a>
+
+{% endif %}      
+
+{% if user.role == 'super administrateur' %}
+
+<!-- ================= DASHBOARD ================= -->
+<div class="sb-sidenav-menu-heading">Admin Système</div>
+
+<a class="nav-link" href="{% url 'redirect_to_super_administrateur' %}">
+    <i class="fas fa-crown me-2"></i>
+    Dashboard
+</a>
+
+<!-- ================= UTILISATEURS ================= -->
+<div class="sb-sidenav-menu-heading">Gestion utilisateurs</div>
+
+<a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
+   data-bs-target="#collapseUsers" aria-expanded="false">
+    <i class="fas fa-users-cog me-2"></i>
+    Utilisateurs
+    <div class="sb-sidenav-collapse-arrow">
+        <i class="fas fa-angle-down"></i>
+    </div>
+</a>
+
+<div class="collapse" id="collapseUsers">
+    <nav class="sb-sidenav-menu-nested nav">
+
+        <a class="nav-link" href="{% url 'liste_membres_admin' %}">
+            <i class="fas fa-users me-2"></i>
+            Membres
+        </a>
+
+        <a class="nav-link" href="{% url 'liste_secretaires_admin' %}">
+            <i class="fas fa-user-tie me-2"></i>
+            Secrétaires
+        </a>
+
+        <a class="nav-link" href="{% url 'ajouter_utilisateur_admin' %}">
+            <i class="fas fa-user-plus me-2"></i>
+            Ajouter utilisateur
+        </a>
+
+    </nav>
+</div>
+
+<!-- ================= BIBLIOTHÈQUE ================= -->
+<div class="sb-sidenav-menu-heading">Bibliothèque</div>
+
+<a class="nav-link" href="{% url 'gestion_livres_admin' %}">
+    <i class="fas fa-book me-2"></i>
+    Gestion livres
+</a>
+
+<!-- ================= STATISTIQUES ================= -->
+<div class="sb-sidenav-menu-heading">Analyse</div>
+
+<a class="nav-link" href="{% url 'statistiques_admin' %}">
+    <i class="fas fa-chart-line me-2"></i>
+    Statistiques
+</a>
+
+<!-- ================= SÉCURITÉ ================= -->
+<div class="sb-sidenav-menu-heading">Sécurité</div>
+
+<a class="nav-link" href="{% url 'logs_systeme_admin' %}">
+    <i class="fas fa-shield-alt me-2"></i>
+    Logs système
+</a>
+
+<a class="nav-link" href="{% url 'gestion_permissions' %}">
+    <i class="fas fa-user-lock me-2"></i>
+    Permissions
+</a>
+
+{% endif %}
+  </div> <!-- END .nav -->
+        
 
         <!-- FOOTER -->
         <div class="sb-sidenav-footer">

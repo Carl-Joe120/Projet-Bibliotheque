@@ -4,141 +4,288 @@
 
 {% block content %}
 
+<style>
+.dashboard-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, #0b4c8b 0%, #0d6efd 45%, #4e8dff 100%);
+    color: #ffffff;
+    box-shadow: 0 24px 60px rgba(13, 110, 253, 0.18);
+    margin-bottom: 2rem;
+}
+.dashboard-hero::before {
+    content: '';
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    top: -40px;
+    right: -80px;
+}
+.dashboard-hero-title {
+    font-size: clamp(2rem, 2.5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+}
+.dashboard-hero-text {
+    max-width: 680px;
+    opacity: 0.92;
+    margin-top: 1rem;
+    font-size: 1rem;
+}
+.dashboard-hero-actions {
+    margin-top: 1.75rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.dashboard-action-btn {
+    min-width: 170px;
+    border-radius: 1rem;
+    padding: 0.85rem 1.35rem;
+    font-weight: 600;
+}
+.dashboard-stat-card {
+    border: none;
+    border-radius: 1.35rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    background: #ffffff;
+}
+.dashboard-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 28px 50px rgba(15, 23, 42, 0.12);
+}
+.dashboard-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    box-shadow: 0 16px 30px rgba(13, 110, 253, 0.14);
+}
+.dashboard-card-title {
+    color: #495057;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    font-size: 0.92rem;
+    margin-bottom: 0.4rem;
+}
+.dashboard-card-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+.dashboard-card-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    padding: 1rem 1.25rem;
+}
+.dashboard-card-footer a {
+    font-size: 0.94rem;
+    font-weight: 600;
+}
+.dashboard-card-footer i {
+    transition: transform 0.25s ease;
+}
+.dashboard-card-footer a:hover + div i,
+.dashboard-card-footer:hover i {
+    transform: translateX(3px);
+}
+.dashboard-chart-card .card-header {
+    background: transparent;
+    border-bottom: none;
+    padding-bottom: 0;
+    color: #0d6efd;
+    font-weight: 700;
+}
+.dashboard-chart-card .card-body {
+    min-height: 320px;
+}
+</style>
 
-                    <div class="container-fluid px-4">
-                        <h1 class="mt-4">Accueil</h1>
-                        <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active"></li>
-                        </ol>
-                        <div class="row gx-4 mt-4">
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card bg-primary text-white mb-4 shadow-sm hover-zoom">
-                                    <div class="card-body d-flex flex-column align-items-start">
-                                        <i class="fas fa-book-reader fa-lg mb-2 pulse-icon"></i> 
-                                        <h5>Livres empruntés</h5>
-                                        <h3 class="stat-count" data-count="{{ user_loans }}">0</h3>
-                                    </div>
-                                    <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <a class="small text-white stretched-link" href="">Voir les livres</a>
-                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                           <div class="col-xl-3 col-md-6">
-                            <div class="card bg-success text-white mb-4 shadow-sm hover-zoom">
-                            <div class="card-body d-flex flex-column align-items-start">
-                                <i class="fas fa-calendar-check fa-lg mb-2 pulse-icon"></i>
-                                <h5>Réservations actives</h5>
-                                <h3 class="stat-count" data-count="{{ user_reservations }}">{{ user_reservations }}</h3>
-                            </div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href={% url 'mes_reservations'  %}> Voir les réservations</a>
-                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                            </div>
-                            </div>
-                        </div>
-                                                        <!-- Livres en retard -->
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card bg-danger text-white mb-4 shadow-sm hover-zoom">
-                                <div class="card-body d-flex flex-column align-items-start">
-                                    <i class="fas fa-exclamation-triangle fa-lg mb-2 pulse-icon"></i>
-                                    <h5>Retards</h5>
-                                    <h3 class="stat-count" data-count="{{ user_late_loans }}">0</h3>
-                                </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between">
-                                    <a class="small text-white stretched-link" href="">Voir les retards</a>
-                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                </div>
-                                </div>
-                            </div>
+<div class="container-fluid px-4">
+    <div class="dashboard-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="dashboard-hero-title">Bienvenue, {{ user.first_name }}.</h1>
+                <p class="dashboard-hero-text">Votre espace membre est prêt. Retrouvez vos emprunts en cours, vos réservations actives, les retards éventuels et les nouveautés à découvrir dans un tableau de bord moderne et clair.</p>
+                <div class="dashboard-hero-actions">
+                    <a href="{% url 'livre_empruntes_membres' %}" class="btn btn-light dashboard-action-btn">Mes emprunts</a>
+                    <a href="{% url 'mes_reservations' %}" class="btn btn-outline-light dashboard-action-btn">Mes réservations</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <div class="badge bg-white text-primary rounded-pill py-2 px-3 fw-semibold">Accueil Membre</div>
+                <div class="mt-4 text-white-75">Accédez rapidement aux données essentielles et suivez votre activité en un coup d'œil.</div>
+            </div>
+        </div>
+    </div>
 
-                            
-                                                        <!-- Recommandations personnalisées -->
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card bg-warning text-white mb-4 shadow-sm hover-zoom">
-                                <div class="card-body d-flex flex-column align-items-start">
-                                    <i class="fas fa-star fa-lg mb-2 pulse-icon"></i>
-                                    <h5>Recommandations</h5>
-                                    <h3 class="stat-count" data-count="">0</h3>
-                                </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between">
-                                    <a class="small text-white stretched-link" href="">Voir les suggestions</a>
-                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                </div>
-                                </div>
-                            </div>
-                            </div>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-stat-card">
+                <div class="card-body d-flex flex-column align-items-start">
+                    <div class="dashboard-card-icon bg-primary"><i class="fas fa-book-reader"></i></div>
+                    <div class="dashboard-card-title">Emprunts en cours</div>
+                    <div class="dashboard-card-value" data-count="{{ user_loans }}">{{ user_loans }}</div>
+                </div>
+                <div class="dashboard-card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-primary stretched-link" href="{% url 'livre_empruntes_membres' %}">Voir les livres</a>
+                    <div class="text-primary"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-stat-card">
+                <div class="card-body d-flex flex-column align-items-start">
+                    <div class="dashboard-card-icon bg-success"><i class="fas fa-calendar-check"></i></div>
+                    <div class="dashboard-card-title">Réservations actives</div>
+                    <div class="dashboard-card-value" data-count="{{ user_reservations }}">{{ user_reservations }}</div>
+                </div>
+                <div class="dashboard-card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-success stretched-link" href="{% url 'mes_reservations' %}">Voir les réservations</a>
+                    <div class="text-success"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-stat-card">
+                <div class="card-body d-flex flex-column align-items-start">
+                    <div class="dashboard-card-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="dashboard-card-title">Retards</div>
+                    <div class="dashboard-card-value" data-count="{{ retard }}">{{ retard }}</div>
+                </div>
+                <div class="dashboard-card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-danger stretched-link" href="{% url 'gestion_retards_membre' %}">Voir les retards</a>
+                    <div class="text-danger"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-stat-card">
+                <div class="card-body d-flex flex-column align-items-start">
+                    <div class="dashboard-card-icon bg-warning"><i class="fas fa-star"></i></div>
+                    <div class="dashboard-card-title">Nouveautés</div>
+                    <div class="dashboard-card-value" data-count="{{ nouveautes_count }}">{{ nouveautes_count }}</div>
+                </div>
+                <div class="dashboard-card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-warning stretched-link" href="{% url 'voir_nouveaute_livre' %}">Voir les nouveaux livres</a>
+                    <div class="text-warning"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                            <br>
-                            <br>
-                            
+    <div class="row g-4">
+        <div class="col-xl-6">
+            <div class="card dashboard-chart-card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div><i class="fas fa-chart-line me-2"></i>Livres empruntés par mois</div>
+                </div>
+                <div class="card-body">
+                    <canvas id="myAreaChart" width="100%" height="40"></canvas>
+                    <div id="areaChartNoData" class="text-center text-muted d-none mt-3">Aucune donnée disponible pour les emprunts.</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card dashboard-chart-card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div><i class="fas fa-chart-bar me-2"></i>Catégories les plus lues</div>
+                </div>
+                <div class="card-body">
+                    <canvas id="myBarChart" width="100%" height="40"></canvas>
+                    <div id="barChartNoData" class="text-center text-muted d-none mt-3">Aucune donnée disponible pour les catégories lues.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                        <div class="row">
-                            <div class="col-xl-6">
-                                <div class="card mb-4">
-                                    <div class="card-header">
-                                        <i class="fas fa-chart-area me-1"></i>
-                                        Livre empruntés par mois
-                                    </div>
-                                    <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
-                                </div>
-                            </div>
-                            <div class="col-xl-6">
-                                <div class="card mb-4">
-                                    <div class="card-header">
-                                        <i class="fas fa-chart-bar me-1"></i>
-                                        Catégorie les plus lues
-                                    </div>
-                                    <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
-                                </div>
-                            </div>
-                        </div>
-                       
-    <script>
-    const pretParMois = {{ pret_par_mois|safe }};
-    const categoriesLesPlusLues = {{ categories_les_plus_lues|safe }};
+{% endblock content %}
 
-    const areaLabels = pretParMois.map(item => item.month);
-    const areaData = pretParMois.map(item => item.count);
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const pretParMois = Array.isArray({{ pret_par_mois|safe }}) ? {{ pret_par_mois|safe }} : [];
+    const categoriesLesPlusLues = Array.isArray({{ categories_les_plus_lues|safe }}) ? {{ categories_les_plus_lues|safe }} : [];
 
-    const barLabels = categoriesLesPlusLues.map(item => item['livre__categorie__nom']);
-    const barData = categoriesLesPlusLues.map(item => item.count);
+    const areaLabels = pretParMois.length ? pretParMois.map(item => item.month) : ['Aucune donnée'];
+    const areaData = pretParMois.length ? pretParMois.map(item => item.count) : [0];
 
-    new Chart(document.getElementById("myAreaChart"), {
-      type: 'line',
-      data: {
-        labels: areaLabels,
-        datasets: [{
-          label: 'Livres empruntés',
-          data: areaData,
-          fill: true,
-          backgroundColor: 'rgba(25, 135, 84, 0.2)',
-          borderColor: 'rgba(25, 135, 84, 1)',
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
-      }
-    });
+    const barLabels = categoriesLesPlusLues.length ? categoriesLesPlusLues.map(item => item['livre__categorie__nom']) : ['Aucune donnée'];
+    const barData = categoriesLesPlusLues.length ? categoriesLesPlusLues.map(item => item.count) : [0];
 
-    new Chart(document.getElementById("myBarChart"), {
-      type: 'bar',
-      data: {
-        labels: barLabels,
-        datasets: [{
-          label: 'Catégories les plus lues',
-          data: barData,
-          backgroundColor: 'rgba(13, 110, 253, 0.7)'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
-      }
-    });
-  document.addEventListener("DOMContentLoaded", function () {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded. Verify that the library is included in layout_footer.html.');
+        return;
+    }
+
+    const areaCtx = document.getElementById("myAreaChart");
+    const barCtx = document.getElementById("myBarChart");
+
+    const areaNoData = document.getElementById('areaChartNoData');
+    const barNoData = document.getElementById('barChartNoData');
+
+    if (areaCtx) {
+        if (!pretParMois.length) {
+            areaCtx.style.display = 'none';
+            if (areaNoData) areaNoData.classList.remove('d-none');
+        } else {
+            new Chart(areaCtx, {
+                type: 'line',
+                data: {
+                    labels: areaLabels,
+                    datasets: [{
+                        label: 'Livres empruntés',
+                        data: areaData,
+                        fill: true,
+                        backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    }
+
+    if (barCtx) {
+        if (!categoriesLesPlusLues.length) {
+            barCtx.style.display = 'none';
+            if (barNoData) barNoData.classList.remove('d-none');
+        } else {
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: 'Catégories les plus lues',
+                        data: barData,
+                        backgroundColor: 'rgba(13, 110, 253, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    }
+
     const toastContainer = document.createElement("div");
     toastContainer.className = "position-fixed top-0 end-0 p-3";
     toastContainer.style.zIndex = "1055";
@@ -158,13 +305,13 @@
     document.body.appendChild(toastContainer);
 
     const toastEl = toastContainer.querySelector(".toast");
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-    toast.show();
-  });
+    if (toastEl && typeof bootstrap !== 'undefined') {
+        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+        toast.show();
+    }
+});
 </script>
-
-
-{% endblock content %}
+{% endblock extra_js %}
 
 
 

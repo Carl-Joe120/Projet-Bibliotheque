@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Supprimer Livre{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4 fw-bold text-danger">Supprimer Livre</h1>
+    <p>Voulez-vous vraiment supprimer le livre <strong>{{ livre.titre }}</strong> de {{ livre.auteur }} ?</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Supprimer
+        </button>
+        <a href="{% url 'liste_livres_secretaire' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

@@ -22,8 +22,3 @@ class AdminEmprunt(admin.ModelAdmin):
     list_filter = ['utilisateur']
     search_fields = ['date_retour_prevu']
 
-@admin.register(Penalite)
-class AdminPenalite(admin.ModelAdmin):
-    list_display = ('emprunt', 'montant','paye')
-    search_fields = ['paye']
-    

@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .scan-page {
+        min-height: 100vh;
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    .scan-panel {
+        width: min(760px, 100%);
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .scan-header {
+        padding: 1.5rem 1.5rem 1rem;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+
+    .scan-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .scan-header p {
+        margin: 0.75rem 0 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.75rem 1rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-top: 1rem;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    }
+
+    .status-pill.valid {
+        background: rgba(34, 197, 94, 0.15);
+        color: #166534;
+    }
+
+    .status-pill.expired {
+        background: rgba(220, 38, 38, 0.14);
+        color: #7f1d1d;
+    }
+
+    .status-pill.processed {
+        background: rgba(107, 114, 128, 0.15);
+        color: #374151;
+    }
+
+    .status-pill.cancelled {
+        background: rgba(245, 158, 11, 0.15);
+        color: #92400e;
+    }
+
+    .scan-body {
+        padding: 1.5rem;
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .book-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .book-cover {
+        width: 100%;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #f1f5f9;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .book-cover img {
+        width: 100%;
+        height: 320px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .book-cover-placeholder {
+        height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-size: 3rem;
+    }
+
+    .info-card {
+        background: #f8fafc;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        padding: 1.25rem 1.35rem;
+        display: grid;
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: grid;
+        gap: 0.25rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid rgba(203, 213, 225, 0.4);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #4b5563;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        line-height: 1.5;
+    }
+
+    .info-value span {
+        display: block;
+        font-weight: 400;
+        color: #6b7280;
+        margin-top: 0.2rem;
+        font-size: 0.9rem;
+    }
+
+    .button-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.9rem;
+    }
+
+    .button-group .btn {
+        border-radius: 14px;
+        padding: 0.95rem 1rem;
+        font-weight: 700;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .button-group .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+    }
+
+    .btn-validate {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+    }
+
+    .info-note {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        padding: 1rem 1.25rem;
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+        .book-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .book-cover {
+            max-width: 260px;
+            margin: 0 auto;
+        }
+
+        .button-group {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="scan-page">
+    <div class="scan-panel">
+        <div class="scan-header">
+            <h1>Contrôle du retrait</h1>
+            <p>Résultat du scan du QR code et informations détaillées de la réservation.</p>
+
+            {% if statut_qr == "valide" %}
+                <div class="status-pill valid">
+                    <i class="fas fa-check-circle"></i>
+                    Réservation valide
+                </div>
+            {% elif statut_qr == "expire" %}
+                <div class="status-pill expired">
+                    <i class="fas fa-clock"></i>
+                    Réservation expirée
+                </div>
+            {% elif statut_qr == "deja_valide" %}
+                <div class="status-pill processed">
+                    <i class="fas fa-history"></i>
+                    Déjà traitée
+                </div>
+            {% elif statut_qr == "annule" %}
+                <div class="status-pill cancelled">
+                    <i class="fas fa-ban"></i>
+                    Réservation annulée
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="scan-body">
+
+            <div class="book-layout">
+
+                <!-- Couverture -->
+                <div class="book-cover">
+                    {% if reservation.livre.couverture %}
+                        <img src="{{ reservation.livre.couverture.url }}" alt="Couverture de {{ reservation.livre.titre }}">
+                    {% else %}
+                        <div class="book-cover-placeholder">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Informations -->
+                <div class="info-card">
+
+                    <div class="info-item">
+                        <div class="info-label">Membre</div>
+                        <div class="info-value">
+                            {{ reservation.utilisateur.nom_complet }}
+                            <span>{{ reservation.utilisateur.email }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Livre réservé</div>
+                        <div class="info-value">
+                            {{ reservation.livre.titre }}
+                            <span>Auteur : {{ reservation.livre.auteur }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Date de réservation</div>
+                        <div class="info-value">
+                            {{ reservation.date_reservation|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Date d’expiration</div>
+                        <div class="info-value">
+                            {{ reservation.date_expiration|date:"d/m/Y" }}
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Type de réservation</div>
+                        <div class="info-value">
+                            {{ reservation.get_type_reservation_display }}
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Statut actuel</div>
+                        <div class="info-value">
+                            {{ reservation.get_statut_display }}
+                        </div>
+                    </div>
+
+                    {% if reservation.message_utilisateur %}
+                    <div class="info-item">
+                        <div class="info-label">Message utilisateur</div>
+                        <div class="info-value">
+                            {{ reservation.message_utilisateur }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            {% if reservation.statut == "en_attente" or reservation.statut == "confirmee" %}
+                <form method="POST" action="{% url 'valider_retrait' reservation.id %}" class="button-group">
+                    {% csrf_token %}
+                    <button name="action" value="emprunt" class="btn btn-validate">
+                        <i class="fas fa-check-circle"></i> Valider retrait
+                    </button>
+
+                    <button name="action" value="annuler" class="btn btn-cancel">
+                        <i class="fas fa-times-circle"></i> Refuser
+                    </button>
+                </form>
+            {% else %}
+                <div class="info-note">
+                    Action déjà effectuée — cette réservation a déjà été traitée.
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

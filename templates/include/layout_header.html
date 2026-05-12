@@ -1,81 +1,138 @@
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-            <!-- Navbar Brand-->
-            <a class="navbar-brand ps-3" href="index.html">Start Bootstrap</a>
-            <!-- Sidebar Toggle-->
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" type="button"><i class="fas fa-bars"></i></button>
-            <!-- Navbar Search-->
-           <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0" method="get" 
+
+   <a class="navbar-brand ps-3" href="">
+    <p style="
+        font-family: 'Arial Black', Arial, sans-serif;
+        font-size: 40px;
+        font-weight: bold;
+        margin: 0;
+        color: #ffffff;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    ">
+        SGBMT
+    </p>
+</a>
+
+    <!-- TOGGLE -->
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0"
+            id="sidebarToggle" type="button">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- SEARCH -->
+    <form id="search-bar-nav"
+      class="d-none d-md-inline-block form-inline me-0 me-md-3 my-2 my-md-0"
+      method="get"
       action="{% url 'trouver_auteur_ou_titre' %}">
+
     <div class="input-group">
-        <input id="live-search" class="form-control" type="text" name="q" placeholder="Rechercher un livre, un auteur..." 
-               value="{{ query|default:"" }}" aria-label="Search" aria-describedby="btnNavbarSearch" />
-        <button class="btn btn-primary" id="btnNavbarSearch" type="submit"><i class="fas fa-search"></i></button>
+        <input class="form-control"
+               type="text"
+               id="live-search"
+               name="q"
+               placeholder="Rechercher un livre..."
+               value="{{ query|default:'' }}">
+
+        <button id="btnNavbarSearch" class="btn btn-primary" type="submit">
+            <i class="fas fa-search"></i>
+        </button>
     </div>
 </form>
 
-            <!-- Navbar-->
-            <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle position-relative"
-       id="alertsDropdown"
-       role="button"
-       data-bs-toggle="dropdown"
-       aria-expanded="false">
 
-        <i class="fas fa-bell fa-fw"></i>
+    <!--  NOTIFICATIONS -->
+    <ul class="navbar-nav ms-auto me-1">
 
-        <span id="notif-badge"
-              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
-        </span>
-    </a>
+        <li class="nav-item dropdown">
 
-    <ul class="dropdown-menu dropdown-menu-end shadow animated--grow-in"
-        aria-labelledby="alertsDropdown"
-        id="notif-dropdown">
+            <!-- BELL -->
+            <a class="nav-link dropdown-toggle position-relative"
+               id="alertsDropdown"
+               role="button"
+               data-bs-toggle="dropdown">
 
-        <li class="dropdown-header">
-            Notifications
-        </li>
+                <i class="fas fa-bell fa-fw"></i>
 
-        <li class="dropdown-item text-muted text-center">
-            Chargement...
-        </li>
-    </ul>
-</li>
+                {% if notifications_unread_count > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ notifications_unread_count }}
+                </span>
+                {% endif %}
 
+            </a>
 
-                
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    {% if user.photo_profil %}
-    <img src="{{ user.photo_profil.url }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
-{% else %}
-    <img src="/static/images/default_avatar.png" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
-{% endif %}
+            <!-- DROPDOWN -->
+            <ul class="dropdown-menu dropdown-menu-end shadow"
+                aria-labelledby="alertsDropdown">
 
-    <span> {{user.get_full_name}}</span>
-</a>
-
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'mon_profil'  %}">Mon Profil</a></li>
-                        <li><a class="dropdown-item" href={% url 'securite_compte'  %}>Sécurité du compte</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li>
-                            <form id="logout-form" method="post" action="{% url 'log_out' %}" class="m-0">
-                                {% csrf_token %}
-
-                                
-                                <button type="button" id="logoutBtn" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Se déconnecter
-                                </button>
-                            </form>
-                        </li>
-                        
-                    </ul>
+                <li class="dropdown-header">
+                    Notifications
                 </li>
-            
-        </nav>
 
-        
+                {% for notif in notifications_nav %}
 
-      
+                    <li>
+                        <a href="{% url 'marquer_notifications_comme_lues' notif.id %}"
+                           class="dropdown-item {% if not notif.lu %}fw-bold{% endif %}">
+
+                            <div>
+                                <strong>{{ notif.titre }}</strong><br>
+                                <small class="text-muted">
+                                    {{ notif.message|truncatechars:60 }}
+                                </small>
+                            </div>
+
+                        </a>
+                    </li>
+
+                {% empty %}
+
+                    <li class="dropdown-item text-muted text-center">
+                        Aucune notification
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+        </li>
+
+        <!-- USER -->
+        <li class="nav-item dropdown">
+
+            <a class="nav-link dropdown-toggle d-flex align-items-center"
+               data-bs-toggle="dropdown">
+
+                {% if user.photo_profil %}
+                    <img src="{{ user.photo_profil.url }}"
+                         class="rounded-circle me-2"
+                         width="32" height="32">
+                {% else %}
+                    <img src="/static/images/default_avatar.png"
+                         class="rounded-circle me-2"
+                         width="32" height="32">
+                {% endif %}
+
+                {{ user.get_full_name }}
+
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+
+                <li><a class="dropdown-item" href="{% url 'mon_profil' %}">Mon Profil</a></li>
+                <li><hr class="dropdown-divider"></li>
+
+                <li>
+                    <form method="post" action="{% url 'log_out' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-danger">
+                            Déconnexion
+                        </button>
+                    </form>
+                </li>
+
+            </ul>
+        </li>
+
+    </ul>
+</nav>

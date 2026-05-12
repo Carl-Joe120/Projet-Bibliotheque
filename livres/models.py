@@ -1,6 +1,10 @@
+from turtle import mode
+
 from django.db import models
 from django.conf import settings
 from datetime import timedelta,date
+
+import utilisateurs
 # Create your models here.
 
 class Categorie(models.Model):
@@ -24,9 +28,10 @@ class Livre(models.Model):
     date_publication = models.DateField()
     categorie = models.ForeignKey(Categorie , on_delete=models.SET_NULL , null=True)
     tags = models.ManyToManyField(Tags , blank= True)    
-    couverture = models.ImageField(upload_to='couvertures/', blank=True , null=True)
-    lecture_en_ligne = models.URLField(blank= True , null=True , default=None)
+    couverture = models.ImageField(upload_to='couvertures/', blank=True , null=True)    
     quantite = models.PositiveIntegerField(default=1)
+    date_ajout_livre = models.DateField(auto_now_add=True)
+    est_nouveau = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.titre} - {self.auteur}"
@@ -37,7 +42,7 @@ def default_retour_prevu():
 class EmpruntType(models.TextChoices):
     EN_COURS = 'en_cours' , "EN COURS"
     RETOURNE = 'retourne' , "RETOURNE"
-    RETARD = 'retard' , "RETARD"
+    
 
 class Emprunt(models.Model):
     utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete=models.CASCADE)
@@ -46,6 +51,9 @@ class Emprunt(models.Model):
     statut = models.CharField(max_length= 30 , choices= EmpruntType.choices , default= EmpruntType.EN_COURS)
     date_retour_effectif = models.DateField(blank=True , null=True)
     livre = models.ForeignKey(Livre , on_delete=models.CASCADE , null=True) 
+    valide_par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL , blank=True , null=True , related_name='validateur_emprunt')
+    email_retard_envoye = models.BooleanField(default=False)
+    notification_retard_envoye = models.BooleanField(default=False)
 
 
     def en_retard(self):
@@ -55,10 +63,13 @@ class Emprunt(models.Model):
         return f"{self.utilisateur} -> {self.livre}"
     
 
-class Penalite(models.Model):
-    emprunt = models.OneToOneField(Emprunt , on_delete=models.CASCADE)
-    montant = models.DecimalField(max_digits=6 , decimal_places=2)
-    paye = models.BooleanField(default=False)
-    date_paiement = models.DateField(blank=True , null= True)
-    def __str__(self):
-        return f"Pénalité: {self.montant} pour {self.emprunt}"
+class Favori(models.Model):
+    utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete=models.CASCADE)
+    livre = models.ForeignKey(Livre , on_delete=models.CASCADE)
+
+
+class ObjectifLecture(models.Model):
+    utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete= models.CASCADE)
+    objectif = models.IntegerField(default=10)
+    anne = models.IntegerField()
+
